@@ -9,6 +9,7 @@
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "project";
   const pad = (n) => String(n).padStart(2, "0");
+  const tone = (i) => `--c: var(--c${i % 6}); --c-soft: var(--c${i % 6}-soft)`;
 
   const storage = {
     get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
@@ -43,7 +44,7 @@
 
     $("#worklist").innerHTML = data.projects
       .map((p, i) => `
-        <li class="work reveal" data-category="${esc(p.category)}">
+        <li class="work reveal" data-category="${esc(p.category)}" style="${tone(i)}">
           <button class="work__row" type="button" data-index="${i}">
             <span class="work__thumb">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : pad(i + 1)}</span>
             <span class="work__num">${pad(i + 1)}</span>
@@ -56,12 +57,12 @@
       .join("");
 
     $("#stats").innerHTML = data.stats
-      .map((s) => `<li class="glass reveal"><strong data-count="${Number(s.value) || 0}" data-suffix="${esc(s.suffix || "")}">0${esc(s.suffix || "")}</strong><span>${esc(s.label)}</span></li>`)
+      .map((s, i) => `<li class="reveal" style="${tone(i)}"><strong data-count="${Number(s.value) || 0}" data-suffix="${esc(s.suffix || "")}">0${esc(s.suffix || "")}</strong><span>${esc(s.label)}</span></li>`)
       .join("");
 
     $("#servicesList").innerHTML = data.services
       .map((s, i) => `
-        <article class="service glass reveal">
+        <article class="service reveal" style="${tone(i + 1)}">
           <span class="service__num">[${pad(i + 1)}]</span>
           <h3>${esc(s.title)}</h3>
           <p>${esc(s.detail)}</p>
@@ -70,7 +71,7 @@
       .join("");
 
     $("#process").innerHTML = data.process
-      .map((p) => `<li class="reveal"><h3>${esc(p.step)}</h3><p>${esc(p.detail)}</p></li>`)
+      .map((p, i) => `<li class="reveal" style="${tone(i)}"><h3>${esc(p.step)}</h3><p>${esc(p.detail)}</p></li>`)
       .join("");
 
     if (data.about.photo) $("#aboutPhoto").innerHTML = `<img src="${esc(data.about.photo)}" alt="${esc(data.name)}">`;
@@ -86,8 +87,8 @@
 
     if (data.testimonials.length) {
       const q = data.testimonials
-        .map((t) => `
-          <figure class="quote glass">
+        .map((t, i) => `
+          <figure class="quote" style="${tone(i + 2)}">
             <blockquote>${esc(t.quote)}</blockquote>
             <figcaption><strong>${esc(t.author)}</strong> · ${esc(t.role)}</figcaption>
           </figure>`)
@@ -313,6 +314,7 @@
       if (!row) return;
       const i = Number(row.dataset.index);
       const p = data.projects[i];
+      preview.style.setProperty("--c", `var(--c${i % 6})`);
       preview.innerHTML = p.image ? `<img src="${esc(p.image)}" alt="">` : pad(i + 1);
       preview.classList.add("is-visible");
     });
@@ -382,11 +384,11 @@
             const b = points[j];
             const d = Math.hypot(a.x - b.x, a.y - b.y);
             if (d < max) {
-              ctx.strokeStyle = `rgba(92, 242, 255, ${(1 - d / max) * 0.18})`;
+              ctx.strokeStyle = `rgba(51, 85, 255, ${(1 - d / max) * 0.16})`;
               ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
             }
           }
-          ctx.fillStyle = "rgba(241, 241, 246, 0.5)";
+          ctx.fillStyle = "rgba(21, 19, 31, 0.25)";
           ctx.fillRect(a.x - dpr, a.y - dpr, 2 * dpr, 2 * dpr);
         }
       }
