@@ -9,12 +9,25 @@
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "project";
   const pad = (n) => String(n).padStart(2, "0");
-  const tone = (i) => `--c: var(--c${i % 6}); --c-soft: var(--c${i % 6}-soft)`;
+  const tone = (i) => `--c: var(--c${i % 6})`;
 
   const storage = {
     get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
     set(key, val) { try { sessionStorage.setItem(key, val); } catch { /* storage unavailable */ } },
   };
+
+  /* Adds the photo to a frame; keeps the monogram fallback if the file is missing. */
+  function mountPhoto(frame, fallbackClass) {
+    const img = new Image();
+    img.alt = data.name;
+    img.decoding = "async";
+    img.onload = () => {
+      const fallback = fallbackClass ? frame.querySelector(`.${fallbackClass}`) : frame.firstElementChild;
+      if (fallback) fallback.remove();
+      frame.appendChild(img);
+    };
+    img.src = data.photo;
+  }
 
   /* ---------- Render content ---------- */
   function render() {
@@ -29,9 +42,16 @@
     if (data.resumeUrl) Object.assign($("#resumeBtn"), { href: data.resumeUrl, hidden: false });
 
     const ring = "scroll · explore · scroll · explore · ";
-    $(".hero__scroll-ring").innerHTML = [...ring]
+    $(".portrait__ring").innerHTML = [...ring]
       .map((c, i) => `<span style="transform: translateX(-50%) rotate(${(360 / ring.length) * i}deg)">${c === " " ? "&nbsp;" : esc(c)}</span>`)
       .join("");
+
+    $("#portraitTag").textContent = data.location ? `Based in ${data.location}` : data.role;
+    if (data.photo) {
+      mountPhoto($(".portrait__frame"), "portrait__fallback");
+      mountPhoto($("#aboutPhoto"));
+    }
+    $$("[data-calendly]").forEach((a) => (a.href = data.calendlyUrl || "#contact"));
 
     const items = data.marquee.map((m) => `<span>${esc(m)} <i>✦</i></span>`).join("");
     $("#marquee").innerHTML = items + items;
@@ -74,7 +94,6 @@
       .map((p, i) => `<li class="reveal" style="${tone(i)}"><h3>${esc(p.step)}</h3><p>${esc(p.detail)}</p></li>`)
       .join("");
 
-    if (data.about.photo) $("#aboutPhoto").innerHTML = `<img src="${esc(data.about.photo)}" alt="${esc(data.name)}">`;
     $("#aboutText").innerHTML = data.about.paragraphs.map((p) => `<p>${esc(p)}</p>`).join("");
     $("#skills").innerHTML = data.about.skills.map((s) => `<li>${esc(s)}</li>`).join("");
     $("#timeline").innerHTML = data.experience
@@ -106,13 +125,14 @@
       $("#faq").hidden = true;
     }
 
-    const mail = `mailto:${data.email}`;
-    $("#ctaLink").href = mail;
-    Object.assign($("#emailLink"), { href: mail, textContent: data.email });
+    Object.assign($("#emailLink"), { href: `mailto:${data.email}`, textContent: data.email });
     $("#socials").innerHTML = data.socials
       .filter((s) => s.url)
-      .map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener">./${esc(s.label.toLowerCase())}</a>`)
+      .map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`)
       .join("");
+    const options = (list) => list.map((o) => `<option>${esc(o)}</option>`).join("");
+    $("#fType").innerHTML = options(data.projectTypes);
+    $("#fBudget").innerHTML = options(data.budgets);
   }
 
   /* ---------- Hero name fits the full width ---------- */
@@ -125,6 +145,13 @@
     const box = getComputedStyle(el.parentElement);
     const width = el.parentElement.clientWidth - parseFloat(box.paddingLeft) - parseFloat(box.paddingRight);
     el.style.fontSize = `${Math.floor((100 * width * 0.995) / natural)}px`;
+    const left = el.getBoundingClientRect().left;
+    const total = el.getBoundingClientRect().width;
+    $$(".ch", el).forEach((ch) => {
+      const inner = ch.firstElementChild;
+      inner.style.setProperty("--w", `${total}px`);
+      inner.style.setProperty("--x", `${left - ch.getBoundingClientRect().left}px`);
+    });
   }
 
   /* ---------- Live clock ---------- */
@@ -384,11 +411,11 @@
             const b = points[j];
             const d = Math.hypot(a.x - b.x, a.y - b.y);
             if (d < max) {
-              ctx.strokeStyle = `rgba(51, 85, 255, ${(1 - d / max) * 0.16})`;
+              ctx.strokeStyle = `rgba(108, 71, 255, ${(1 - d / max) * 0.18})`;
               ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
             }
           }
-          ctx.fillStyle = "rgba(21, 19, 31, 0.25)";
+          ctx.fillStyle = "rgba(18, 15, 43, 0.25)";
           ctx.fillRect(a.x - dpr, a.y - dpr, 2 * dpr, 2 * dpr);
         }
       }
@@ -396,16 +423,21 @@
     })();
   }
 
-  /* ---------- Preloader ---------- */
+  /* ---------- Loader: greetings + gradient ring ---------- */
   function preload(done) {
     if (reduceMotion || storage.get("loaded")) return done();
     storage.set("loaded", "1");
     document.body.classList.add("is-loading");
+    const word = $("#loaderWord");
     const count = $("#loaderCount");
-    const bar = $("#loaderBar");
+    const arc = $("#loaderArc");
+    const greetings = data.greetings && data.greetings.length ? data.greetings : ["Hello"];
+    const circumference = 339.3;
+    const dur = 2100;
     const start = performance.now();
-    const dur = 1500;
+    let shown = 0;
     let finished = false;
+
     const finish = () => {
       if (finished) return;
       finished = true;
@@ -413,20 +445,80 @@
       removeEventListener("pointerdown", finish);
       const el = $("#loader");
       el.classList.add("is-done");
-      setTimeout(() => { document.body.classList.remove("is-loading"); el.remove(); }, 800);
       setTimeout(done, 350);
+      setTimeout(() => { document.body.classList.remove("is-loading"); el.remove(); }, 1000);
     };
     addEventListener("keydown", finish);
     addEventListener("pointerdown", finish);
+
     (function step(t) {
       if (finished) return;
       const k = Math.min(1, (t - start) / dur);
-      const n = Math.round(100 * (1 - Math.pow(1 - k, 2)));
-      count.textContent = String(n).padStart(3, "0");
-      bar.style.width = `${n}%`;
+      const eased = 1 - Math.pow(1 - k, 3);
+      count.textContent = Math.round(eased * 100);
+      arc.style.strokeDashoffset = circumference * (1 - eased);
+      const next = Math.min(greetings.length - 1, Math.floor(k * greetings.length));
+      if (next !== shown) {
+        shown = next;
+        word.classList.add("is-swap");
+        setTimeout(() => { word.textContent = greetings[shown]; word.classList.remove("is-swap"); }, 160);
+      }
       if (k < 1) requestAnimationFrame(step);
-      else setTimeout(finish, 200);
+      else setTimeout(finish, 350);
     })(start);
+    word.textContent = greetings[0];
+  }
+
+  /* ---------- Contact form ---------- */
+  function initForm() {
+    const form = $("#contactForm");
+    const status = $("#formStatus");
+    const submit = $("#formSubmit");
+    const say = (msg, kind = "") => { status.textContent = msg; status.className = `form__status ${kind && `is-${kind}`}`; };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fields = [$("#fName"), $("#fEmail"), $("#fMessage")];
+      let firstBad = null;
+      fields.forEach((f) => {
+        const bad = !f.value.trim() || (f.type === "email" && !/^\S+@\S+\.\S+$/.test(f.value.trim()));
+        f.closest(".field").classList.toggle("is-invalid", bad);
+        if (bad && !firstBad) firstBad = f;
+      });
+      if (firstBad) {
+        say("Please fill in your name, a valid email and a short message.", "error");
+        firstBad.focus();
+        return;
+      }
+      if (form._gotcha.value) return; // spam bot
+
+      const entry = Object.fromEntries(new FormData(form));
+      delete entry._gotcha;
+
+      if (!data.formEndpoint) {
+        const body = `Name: ${entry.name}\nEmail: ${entry.email}\nProject: ${entry.project_type}\nBudget: ${entry.budget}\n\n${entry.message}`;
+        location.href = `mailto:${data.email}?subject=${encodeURIComponent(`New project enquiry from ${entry.name}`)}&body=${encodeURIComponent(body)}`;
+        say(`Your email app should open with the message ready to send. If it doesn't, write to ${data.email}.`);
+        return;
+      }
+
+      submit.disabled = true;
+      say("Sending…");
+      try {
+        const res = await fetch(data.formEndpoint, {
+          method: "POST",
+          headers: { Accept: "application/json", "Content-Type": "application/json" },
+          body: JSON.stringify(entry),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        say("Thanks! Your message is on its way. I'll reply within two working days.", "ok");
+      } catch {
+        say(`Your message couldn't be sent. Please try again, or email ${data.email}.`, "error");
+      } finally {
+        submit.disabled = false;
+      }
+    });
   }
 
   render();
@@ -438,6 +530,7 @@
   initModal();
   initNav();
   initCopy();
+  initForm();
   initStatement();
   initPointerFx();
   initNetwork();

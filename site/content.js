@@ -11,6 +11,23 @@ window.PORTFOLIO = {
   email: "workwithignatius@gmail.com",
   resumeUrl: "", // e.g. "assets/resume.pdf"
 
+  // Your photo for the hero and About sections. Add the file at site/assets/me.jpg
+  // (portrait, roughly 4:5). Until it exists, a gradient monogram is shown.
+  photo: "assets/me.jpg",
+
+  // "Let's talk" buttons open this link. Paste your Calendly URL here.
+  calendlyUrl: "https://calendly.com/", // e.g. "https://calendly.com/itsigni/30min"
+
+  // Contact form. Create a free form at https://formspree.io and paste its endpoint,
+  // e.g. "https://formspree.io/f/abcdwxyz". If left empty, the form opens the
+  // visitor's email app with the message filled in instead.
+  formEndpoint: "",
+  projectTypes: ["UI/UX Design", "Branding", "Motion & 3D", "Web Development", "Something else"],
+  budgets: ["Under $1k", "$1k – $5k", "$5k – $10k", "$10k+", "Not sure yet"],
+
+  // Greetings cycled on the loading screen.
+  greetings: ["Hello", "வணக்கம்", "नमस्ते", "Hola", "Bonjour", "Ciao", "こんにちは"],
+
   // Big statement under the hero — revealed word by word as you scroll.
   statement:
     "[I design and build digital experiences that feel effortless — a sentence or two about your approach, the kind of teams you work with and the results you care about.]",
@@ -98,7 +115,6 @@ window.PORTFOLIO = {
   ],
 
   about: {
-    photo: "", // e.g. "assets/me.jpg"
     paragraphs: [
       "[A short intro: who you are and what drives your work.]",
       "[How you work with people, and what you're looking for next.]",
