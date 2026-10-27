@@ -1,0 +1,19 @@
+# Dev checks: run on main and on pull requests into Prod, before anything ships.
+name: Dev checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [Prod]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Site entry point exists
+        run: test -f site/index.html
