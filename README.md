@@ -16,3 +16,8 @@ My Portfolio works done here
 4. The **Deploy production** workflow publishes the site.
 
 The site lives in `site/`; only that folder is published.
+
+## Editing content
+
+All text, projects, links and images are in `site/content.js`. Anything in `[brackets]` is placeholder copy.
+Put images in `site/assets/` and reference them as `assets/your-file.jpg`.

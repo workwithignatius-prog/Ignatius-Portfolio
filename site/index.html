@@ -4,17 +4,145 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ignatius — Portfolio</title>
-  <style>
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center;
-           font-family: system-ui, sans-serif; background: #0f0f10; color: #f2f2f2; }
-    main { text-align: center; padding: 16px; }
-    p { color: #9a9a9a; }
-  </style>
+  <meta name="description" content="Portfolio of Ignatius (itsigni).">
+  <meta name="theme-color" content="#07070d">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main>
-    <h1>Ignatius</h1>
-    <p>Portfolio coming soon.</p>
+  <!-- Boot sequence (first visit per session) -->
+  <div class="boot" id="boot" aria-hidden="true">
+    <pre class="boot__log" id="bootLog"></pre>
+    <span class="boot__skip">press any key to skip</span>
+  </div>
+
+  <!-- Background layers -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg__blob bg__blob--a"></div>
+    <div class="bg__blob bg__blob--b"></div>
+    <div class="bg__blob bg__blob--c"></div>
+    <canvas class="bg__net" id="net"></canvas>
+  </div>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="cursor" id="cursor" aria-hidden="true"><span class="cursor__label"></span></div>
+
+  <header class="nav" id="nav">
+    <a class="nav__logo" href="#top" data-handle>itsigni</a>
+    <nav class="nav__links" id="navLinks" aria-label="Main">
+      <a href="#work">Work</a>
+      <a href="#about">About</a>
+      <a href="#experience">Experience</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <a class="btn btn--small btn--ghost nav__resume" id="resumeBtn" href="#" target="_blank" rel="noopener" hidden>Résumé</a>
+    <button class="nav__toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+      <span></span><span></span>
+    </button>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero__inner">
+        <p class="label" id="availability"><span class="dot"></span> available for work</p>
+        <h1 class="hero__name" data-scramble id="heroName">Ignatius</h1>
+        <p class="hero__role mono" id="heroRole"></p>
+        <p class="hero__tagline" id="heroTagline"></p>
+        <div class="hero__cta">
+          <a class="btn btn--primary magnetic" href="#work">View work <span aria-hidden="true">→</span></a>
+          <a class="btn btn--ghost magnetic" href="#contact">Let's talk</a>
+        </div>
+        <ul class="stats" id="stats"></ul>
+      </div>
+      <div class="hero__grid" aria-hidden="true"></div>
+      <a class="hero__scroll mono" href="#work" aria-label="Scroll to work">scroll ↓</a>
+    </section>
+
+    <!-- Work -->
+    <section class="section" id="work">
+      <header class="section__head reveal">
+        <p class="label">01 / selected work</p>
+        <h2 data-scramble>Projects</h2>
+      </header>
+      <div class="filters reveal" id="filters" role="tablist" aria-label="Filter projects"></div>
+      <div class="projects" id="projects"></div>
+    </section>
+
+    <!-- About -->
+    <section class="section" id="about">
+      <header class="section__head reveal">
+        <p class="label">02 / about</p>
+        <h2 data-scramble>About me</h2>
+      </header>
+      <div class="about glass reveal">
+        <div class="about__photo" id="aboutPhoto"><span class="mono">IG</span></div>
+        <div class="about__text">
+          <div id="aboutText"></div>
+          <ul class="chips" id="skills"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Experience -->
+    <section class="section" id="experience">
+      <header class="section__head reveal">
+        <p class="label">03 / experience</p>
+        <h2 data-scramble>Timeline</h2>
+      </header>
+      <ol class="timeline" id="timeline"></ol>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section" id="testimonials">
+      <header class="section__head reveal">
+        <p class="label">04 / kind words</p>
+        <h2 data-scramble>Testimonials</h2>
+      </header>
+      <div class="quotes" id="quotes"></div>
+    </section>
+
+    <!-- Contact -->
+    <section class="section" id="contact">
+      <header class="section__head reveal">
+        <p class="label">05 / contact</p>
+        <h2 data-scramble>Let's build something</h2>
+      </header>
+      <div class="terminal glass reveal">
+        <div class="window__bar"><i></i><i></i><i></i><span class="mono">contact.sh</span></div>
+        <div class="terminal__body mono">
+          <p><span class="prompt">$</span> whoami</p>
+          <p class="muted" id="termWho"></p>
+          <p><span class="prompt">$</span> cat email.txt</p>
+          <p class="terminal__email">
+            <a id="emailLink" href="#"></a>
+            <button class="btn btn--small btn--ghost" id="copyEmail" type="button">copy</button>
+          </p>
+          <p><span class="prompt">$</span> ls ./socials</p>
+          <p class="terminal__socials" id="socials"></p>
+          <p><span class="prompt">$</span> <span class="caret"></span></p>
+        </div>
+      </div>
+    </section>
   </main>
+
+  <footer class="footer mono">
+    <span>© <span id="year"></span> <span data-handle>itsigni</span></span>
+    <a href="#top">back to top ↑</a>
+  </footer>
+
+  <!-- Case study modal -->
+  <dialog class="modal glass" id="modal" aria-labelledby="modalTitle">
+    <div class="window__bar"><i></i><i></i><i></i><span class="mono" id="modalFile"></span>
+      <button class="modal__close" id="modalClose" aria-label="Close">✕</button>
+    </div>
+    <div class="modal__body" id="modalBody"></div>
+  </dialog>
+
+  <div class="toast mono" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="content.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
