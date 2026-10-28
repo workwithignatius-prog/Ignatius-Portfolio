@@ -31,11 +31,15 @@ page: home
     </div>
 
     <div class="hero__layout">
-      <div class="hero__card glass glow tilt" data-tilt="4">
-        <p class="hero__role mono" id="heroRole">{{role}}</p>
+      <div class="hero__intro">
+        <p class="hero__roles">
+          <span class="hero__roles-main" id="heroRole">{{role}}</span>
+          <span class="hero__roles-also"><span class="hero__and">and a</span> <span class="roller" id="roleRoller"><span class="roller__word">music producer</span></span></span>
+        </p>
         <p class="hero__tagline" id="heroTagline"></p>
+        <p class="hero__now"><span class="dot"></span> <span id="heroNow"></span></p>
         <div class="hero__cta">
-          <a class="btn btn--primary btn--glow magnetic" data-calendly href="{{root}}contact.html">
+          <a class="btn btn--primary btn--glow magnetic" data-calendly data-cursor="Book" href="{{root}}contact.html">
             <span class="btn__dot" aria-hidden="true"></span> Let's talk
           </a>
           <a class="btn btn--ghost magnetic" href="{{root}}experience.html">View experience <span aria-hidden="true">↘</span></a>
@@ -47,25 +51,14 @@ page: home
         </div>
       </div>
 
-      <div class="hero__stack">
-        <a class="now glass glow tilt" data-tilt="5" href="{{root}}experience.html">
-          <p class="now__label mono"><span class="dot"></span> Currently</p>
-          <p class="now__role" id="nowRole"></p>
-          <p class="now__at" id="nowAt"></p>
-          <span class="now__arrow" aria-hidden="true">↗</span>
-        </a>
-        <ul class="tiles" id="heroStats"></ul>
+      <div class="hero__visual" id="heroVisual">
+        <figure class="portrait tilt" data-tilt="7" id="portrait">
+          <div class="portrait__frame">
+            <div class="portrait__fallback" aria-hidden="true">IG</div>
+          </div>
+        </figure>
+        <ul class="orbit" id="orbit" aria-label="Beyond work"></ul>
       </div>
-
-      <figure class="portrait tilt" data-tilt="7" id="portrait">
-        <div class="portrait__frame">
-          <div class="portrait__fallback" aria-hidden="true">IG</div>
-        </div>
-        <ul class="portrait__chips" id="heroChips"></ul>
-        <a class="portrait__badge" href="#intro" aria-label="Scroll to the intro">
-          <span class="portrait__ring" data-ring="scroll · explore · scroll · explore · "></span><span class="portrait__arrow">↓</span>
-        </a>
-      </figure>
     </div>
     <div class="hero__dots" aria-hidden="true"></div>
   </section>
@@ -89,6 +82,7 @@ page: home
         </div>
         <a class="link-arrow link-arrow--light" href="{{root}}experience.html">Full experience <span aria-hidden="true">→</span></a>
       </header>
+      <ul class="numbers numbers--dark" id="xpNumbers"></ul>
       <ol class="worklist" id="xpRows"></ol>
       <p class="panel__subhead mono">Highlights</p>
       <div class="awards" id="awards"></div>
@@ -115,6 +109,18 @@ page: home
       </div>
     </header>
     <ol class="process" id="processList"></ol>
+  </section>
+
+  <!-- B-sides -->
+  <section class="section" id="b-sides">
+    <header class="section__head">
+      <div>
+        <p class="label">Beyond work</p>
+        <h2 class="reveal" data-scramble>The B-sides</h2>
+      </div>
+      <p class="section__note">Off the clock, I make music, ad films and designs, create content, and train.</p>
+    </header>
+    <div class="albums" id="albums"></div>
   </section>
 
   <!-- posts:latest -->

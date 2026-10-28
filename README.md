@@ -20,6 +20,8 @@ Portfolio and blog for Ignatius Nirmal G.
 | All page text: experience, services, skills, certifications, links | `site/content.js` |
 | Blog posts | `site/blog/posts/` |
 | Images | `site/assets/` (blog images in `site/assets/blog/`) |
+| Company logos for the experience hover | `site/assets/logos/`, linked from each role's `logo` in `site/content.js` |
+| "The B-sides" (music, film, design, content, calisthenics, gym) | `passions` in `site/content.js`. Add a `cover` image or a `link` to any of them |
 | Page layouts | `site/*.html`, shared pieces in `site/_partials/`, the post layout in `site/_layouts/post.html` |
 | Styles and scripts | `site/styles.css`, `site/script.js` |
 
