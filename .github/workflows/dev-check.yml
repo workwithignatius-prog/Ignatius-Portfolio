@@ -15,5 +15,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Site entry point exists
-        run: test -f site/index.html
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build the site, including drafts
+        run: node build/build.mjs --out _site --drafts
+      - name: Check the main pages were built
+        run: |
+          for f in index.html experience.html about.html contact.html blog/index.html 404.html feed.xml sitemap.xml; do
+            test -f "_site/$f" || { echo "Missing _site/$f"; exit 1; }
+          done

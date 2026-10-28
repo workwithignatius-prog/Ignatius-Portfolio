@@ -1,0 +1,60 @@
+<section class="section contact-block" id="contact">
+  <div class="contact-block__intro">
+    <p class="label">{{contactLabel}}</p>
+    <h2 class="contact-block__title reveal" data-scramble>{{contactTitle}}</h2>
+    <p class="contact-block__lead">{{contactLead}}</p>
+    <ul class="contact-list">
+      <li class="contact-list__item glow">
+        <span class="contact-list__label mono">Email</span>
+        <div class="contact-list__row">
+          <a class="contact-list__value" data-email-link href="mailto:{{email}}">{{email}}</a>
+          <button class="btn btn--small btn--ghost" data-copy-email type="button">Copy</button>
+        </div>
+      </li>
+      <li class="contact-list__item glow" data-calendly-only hidden>
+        <span class="contact-list__label mono">Book a call</span>
+        <a class="contact-list__value" data-calendly href="#contactForm">Pick a time on Calendly ↗</a>
+      </li>
+      <li class="contact-list__item glow">
+        <span class="contact-list__label mono">LinkedIn</span>
+        <a class="contact-list__value" data-social-link="LinkedIn" href="#" target="_blank" rel="noopener">linkedin.com/in/itsigni ↗</a>
+      </li>
+      <li class="contact-list__item glow">
+        <span class="contact-list__label mono">Based in</span>
+        <p class="contact-list__value">{{location}} · <span data-clock>--:--</span> <span data-tz>IST</span></p>
+      </li>
+    </ul>
+  </div>
+
+  <form class="form glow" id="contactForm" novalidate>
+    <div class="form__row">
+      <label class="field">
+        <span>Your name</span>
+        <input id="fName" name="name" type="text" autocomplete="name" required placeholder="Jane Doe">
+      </label>
+      <label class="field">
+        <span>Email</span>
+        <input id="fEmail" name="email" type="email" autocomplete="email" required placeholder="jane@company.com">
+      </label>
+    </div>
+    <div class="form__row">
+      <label class="field">
+        <span>Company <em>(optional)</em></span>
+        <input id="fCompany" name="company" type="text" autocomplete="organization" placeholder="Acme Inc.">
+      </label>
+      <label class="field">
+        <span>I'm reaching out about</span>
+        <select id="fTopic" name="topic"></select>
+      </label>
+    </div>
+    <label class="field">
+      <span>Message</span>
+      <textarea id="fMessage" name="message" rows="5" required placeholder="What are you working on, and how can I help?"></textarea>
+    </label>
+    <input class="form__trap" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <div class="form__foot">
+      <button class="btn btn--primary btn--glow" id="formSubmit" type="submit">Send message <span aria-hidden="true">→</span></button>
+      <p class="form__status" id="formStatus" role="status" aria-live="polite"></p>
+    </div>
+  </form>
+</section>

@@ -1,0 +1,74 @@
+<!--meta
+title: About — Ignatius Nirmal G
+description: Ignatius Nirmal G is a presales and solutions engineer from Chennai with 5+ years in SaaS. Toolbox, competencies and certifications.
+page: about
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<!-- include:head -->
+</head>
+<body id="top" data-page="about" data-root="{{root}}">
+<!-- include:bg -->
+<!-- include:nav -->
+
+<main id="main">
+  <header class="page-head page-head--split">
+    <div class="page-head__text">
+      <p class="label">About</p>
+      <h1 class="page-head__title">Hi, I'm <span class="grad">{{name}}</span></h1>
+      <p class="page-head__lead" id="aboutLead"></p>
+      <div class="prose prose--about" id="aboutText"></div>
+      <div class="page-head__cta">
+        <a class="btn btn--primary btn--glow magnetic" data-calendly href="{{root}}contact.html"><span class="btn__dot" aria-hidden="true"></span> Let's talk</a>
+        <a class="btn btn--ghost magnetic" href="{{root}}experience.html">See my experience <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+    <figure class="about-photo tilt" data-tilt="6">
+      <div class="about-photo__frame" id="aboutPhoto"><span class="portrait__fallback" aria-hidden="true">IG</span></div>
+      <figcaption class="about-photo__caption mono"><span class="dot"></span> <span data-location>{{location}}</span></figcaption>
+    </figure>
+  </header>
+
+  <section class="section section--tight" aria-label="Quick facts">
+    <ul class="facts" id="facts"></ul>
+  </section>
+
+  <section class="section" id="toolbox">
+    <header class="section__head">
+      <div>
+        <p class="label">Toolbox</p>
+        <h2 class="reveal" data-scramble>Tools I use</h2>
+      </div>
+    </header>
+    <div class="toolbox" id="toolboxGrid"></div>
+  </section>
+
+  <section class="section" id="competencies">
+    <header class="section__head">
+      <div>
+        <p class="label">Core competencies</p>
+        <h2 class="reveal" data-scramble>What I bring</h2>
+      </div>
+    </header>
+    <ul class="cloud" id="competencyCloud"></ul>
+  </section>
+
+  <div class="panel panel--dark" data-glow>
+    <section class="section">
+      <header class="section__head">
+        <div>
+          <p class="label">Certifications</p>
+          <h2 class="reveal" data-scramble>Always learning</h2>
+        </div>
+      </header>
+      <ul class="certs" id="certs"></ul>
+    </section>
+  </div>
+
+</main>
+
+<!-- include:footer -->
+<!-- include:scripts -->
+</body>
+</html>
