@@ -52,11 +52,19 @@ window.PORTFOLIO = {
     { value: 30, prefix: "$", suffix: "K", label: "Revenue in 3 months at BookingBee.ai" },
   ],
 
-  // Floating badges around the hero photo. Icons: star, spark, pin.
-  heroChips: [
-    { icon: "star", text: "Rockstar Rookie · Zoho" },
-    { icon: "spark", text: "AI/ML solutions" },
-    { icon: "pin", text: "Chennai, India" },
+  // The hero's second line cycles through these: "Presales & solutions engineer and a …"
+  alsoRoles: ["music producer", "ad film maker", "designer", "content creator"],
+
+  // "The B-sides": life beyond work. Each one gets a generated album cover.
+  // art: music, film, design, content, calisthenics or gym. Optional: cover (an image
+  // path, e.g. "assets/b-sides/music.jpg") and link (Spotify, YouTube, Instagram…).
+  passions: [
+    { title: "Music Producer", tagline: "Beats, mixes and sound design", art: "music", cover: "", link: "" },
+    { title: "Ad Film Maker", tagline: "From concept to the final cut", art: "film", cover: "", link: "" },
+    { title: "Designer", tagline: "Brands, visuals and layouts", art: "design", cover: "", link: "" },
+    { title: "Content Creator", tagline: "Stories for the feed", art: "content", cover: "", link: "" },
+    { title: "Calisthenics", tagline: "Bodyweight strength and skills", art: "calisthenics", cover: "", link: "" },
+    { title: "Gym", tagline: "Strength training", art: "gym", cover: "", link: "" },
   ],
 
   statement:
@@ -67,6 +75,7 @@ window.PORTFOLIO = {
   experience: [
     {
       company: "impress.ai",
+      logo: "", // add a file such as "assets/logos/impress-ai.svg"
       role: "Product, Presales & Solution Engineer",
       period: "May 2024 — Present",
       location: "India",
@@ -84,6 +93,7 @@ window.PORTFOLIO = {
     },
     {
       company: "BookingBee.ai",
+      logo: "", // add a file such as "assets/logos/bookingbee.svg"
       role: "Founding Member — Product & Solutions",
       period: "Nov 2022 — Jan 2024",
       location: "India",
@@ -102,6 +112,7 @@ window.PORTFOLIO = {
     },
     {
       company: "Vajro",
+      logo: "", // add a file such as "assets/logos/vajro.svg"
       role: "Presales Consultant",
       period: "Jan 2022 — Jan 2023",
       location: "India",
@@ -118,6 +129,7 @@ window.PORTFOLIO = {
     },
     {
       company: "Zoho Corporation",
+      logo: "assets/logos/zoho.svg",
       role: "Presales Engineer",
       period: "Oct 2020 — Dec 2021",
       location: "India",
@@ -130,10 +142,11 @@ window.PORTFOLIO = {
         "Built lasting client relationships as a trusted technical advisor.",
       ],
       tags: ["Enterprise SaaS", "Zoho One", "POCs"],
-      award: "Rockstar Rookie & Best Performer, 2021",
+      award: "Best Performer Award, 2021",
     },
     {
       company: "Infosys",
+      logo: "assets/logos/infosys.svg",
       role: "Presales & Platform Consultant",
       period: "Aug 2019 — Jul 2020",
       location: "India",
@@ -157,9 +170,9 @@ window.PORTFOLIO = {
       text: "Created the full go-to-market strategy, led team formation, trained the team on cold calling, solution selling and onboarding, and reached $30,000 in revenue within 3 months.",
     },
     {
-      title: "Rockstar Rookie & Best Performer",
+      title: "Best Performer Award",
       org: "Zoho · 2021",
-      text: "Recognised for tailored product demos that significantly increased Zoho One conversions, and named best performer for April, May, August and November 2021.",
+      text: "Named best performer for April, May, August and November 2021, recognised for tailored product demos that significantly increased Zoho One conversions.",
     },
     {
       title: "Most Efficient Presales Player",
@@ -218,6 +231,7 @@ window.PORTFOLIO = {
       "I'm Ignatius Nirmal G, a presales and solutions engineer from Chennai with 5+ years in SaaS. I work between sales, product and engineering: I find out what a client really needs, then shape the solution, demo and proposal that gets them there.",
       "I've done this at enterprises like Zoho and Infosys and at fast-moving startups like Vajro, BookingBee.ai and impress.ai. That means responding to RFPs, RFQs and RFIs, building AI/ML solutions with prompt engineering and custom pipelines, and integrating APIs so it all works in the real world.",
       "I care about value-based selling, smooth customer onboarding and sales processes that scale.",
+      "Outside work, I'm a music producer, ad film maker, designer and content creator, and you'll find me doing calisthenics or at the gym.",
     ],
     facts: [
       { label: "Based in", value: "Chennai, Tamil Nadu, India" },
