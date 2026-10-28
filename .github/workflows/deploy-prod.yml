@@ -1,10 +1,12 @@
-# Production deploy: every push to the Prod branch publishes site/ to GitHub Pages.
-# main is the dev environment and is never deployed.
-name: Deploy production
+# Publishes the site to GitHub Pages.
+#   Prod branch -> the live site
+#   main branch -> a dev preview at /dev/ (drafts visible, hidden from search engines)
+# Pages hosts one site per repository, so both are rebuilt whenever either branch changes.
+name: Deploy site
 
 on:
   push:
-    branches: [Prod]
+    branches: [Prod, main]
   workflow_dispatch:
 
 permissions:
@@ -13,21 +15,50 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages-production
+  group: pages
   cancel-in-progress: false
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out production (Prod)
+        uses: actions/checkout@v4
+        with:
+          ref: Prod
+          path: prod
+      - name: Check out dev (main)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build the live site from Prod
+        run: |
+          if [ -f prod/build/build.mjs ]; then
+            node prod/build/build.mjs --out _site
+          else
+            mkdir -p _site && cp -r prod/site/. _site/
+          fi
+      - name: Build the dev preview from main
+        continue-on-error: true
+        run: |
+          if [ -f dev/build/build.mjs ]; then
+            node dev/build/build.mjs --out _site/dev --dev
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
   deploy:
-    if: github.ref == 'refs/heads/Prod'
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
       - id: deployment
         uses: actions/deploy-pages@v4

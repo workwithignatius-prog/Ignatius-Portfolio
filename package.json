@@ -1,0 +1,13 @@
+{
+  "name": "ignatius-portfolio",
+  "private": true,
+  "type": "module",
+  "description": "Portfolio and blog for Ignatius Nirmal G",
+  "scripts": {
+    "build": "node build/build.mjs --out dist",
+    "dev": "node build/build.mjs --out dist --drafts && node build/serve.mjs dist 8000"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

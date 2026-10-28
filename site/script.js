@@ -4,215 +4,309 @@
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const finePointer = matchMedia("(pointer: fine)").matches;
+  const page = document.body.dataset.page || "";
+  const root = document.body.dataset.root || "";
 
   const esc = (s = "") =>
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "project";
+  const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item";
   const pad = (n) => String(n).padStart(2, "0");
   const tone = (i) => `--c: var(--c${i % 6})`;
+  const asset = (p) => (/^(https?:)?\/\//.test(p) ? p : root + String(p).replace(/^\//, ""));
+  const social = (label) => (data.socials || []).find((s) => s.label.toLowerCase() === label.toLowerCase() && s.url);
+  const chips = (list) => `<ul class="chips">${list.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`;
 
   const storage = {
     get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
     set(key, val) { try { sessionStorage.setItem(key, val); } catch { /* storage unavailable */ } },
   };
 
-  /* Adds the photo to a frame; keeps the monogram fallback if the file is missing. */
-  function mountPhoto(frame, fallbackClass) {
+  const ICONS = {
+    star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>',
+    spark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.1 7.9L22 12l-7.9 2.1L12 22l-2.1-7.9L2 12l7.9-2.1z"/></svg>',
+    pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 22s7-6.6 7-12.3A7 7 0 0 0 5 9.7C5 15.4 12 22 12 22zm0-9.3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>',
+    medal: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 1.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zm0 3.2l1.2 2.5 2.7.3-2 1.9.5 2.7L12 10.8l-2.4 1.3.5-2.7-2-1.9 2.7-.3zM8.2 15.3L6.8 22.5 12 20l5.2 2.5-1.4-7.2A8.4 8.4 0 0 1 12 16.5a8.4 8.4 0 0 1-3.8-1.2z"/></svg>',
+  };
+
+  /* Adds the photo to a frame; keeps the monogram if the file is missing. */
+  function mountPhoto(frame) {
+    if (!frame || !data.photo) return;
     const img = new Image();
-    img.alt = data.name;
+    img.alt = data.fullName;
     img.decoding = "async";
     img.onload = () => {
-      const fallback = fallbackClass ? frame.querySelector(`.${fallbackClass}`) : frame.firstElementChild;
-      if (fallback) fallback.remove();
+      frame.querySelector(".portrait__fallback")?.remove();
       frame.appendChild(img);
     };
-    img.src = data.photo;
+    img.src = asset(data.photo);
   }
 
-  /* ---------- Render content ---------- */
-  function render() {
-    $$("[data-handle]").forEach((el) => (el.textContent = data.handle));
-    $("#heroName").innerHTML = [...data.name].map((c) => `<span class="ch"><span>${esc(c)}</span></span>`).join("");
-    $("#heroName").setAttribute("aria-label", data.name);
+  /* ---------- Shared on every page ---------- */
+  function renderCommon() {
+    $$("[data-calendly]").forEach((a) => {
+      if (!data.calendlyUrl) return;
+      a.href = data.calendlyUrl;
+      a.target = "_blank";
+      a.rel = "noopener";
+    });
+    $$("[data-calendly-only]").forEach((el) => (el.hidden = !data.calendlyUrl));
+    $$("[data-email-link]").forEach((a) => {
+      a.href = `mailto:${data.email}`;
+      a.textContent = data.email;
+    });
+    $$("[data-social-link]").forEach((a) => {
+      const s = social(a.dataset.socialLink);
+      if (s) a.href = s.url;
+      else a.closest("li")?.remove();
+    });
+    $$("[data-socials-list]").forEach((li) => {
+      li.outerHTML = (data.socials || [])
+        .filter((s) => s.url)
+        .map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></li>`)
+        .join("");
+    });
+    $$("[data-location]").forEach((el) => (el.textContent = data.location));
+    $$("[data-tz]").forEach((el) => (el.textContent = data.timezoneLabel || ""));
+    $$("[data-availability]").forEach((el) => (el.hidden = !data.available));
+    $$("[data-availability-text]").forEach((el) => (el.textContent = data.availability));
+    $$("[data-nav]").forEach((a) => {
+      const on = a.dataset.nav === page || (page === "post" && a.dataset.nav === "blog");
+      a.classList.toggle("is-active", on);
+      if (on) a.setAttribute("aria-current", "page");
+    });
+    const topic = $("#fTopic");
+    if (topic) topic.innerHTML = data.contactTopics.map((o) => `<option>${esc(o)}</option>`).join("");
+    const resume = $("#resumeBtn");
+    if (resume && data.resumeUrl) Object.assign(resume, { href: asset(data.resumeUrl), hidden: false });
+  }
+
+  function statTiles(el) {
+    if (!el) return;
+    el.innerHTML = data.stats
+      .map(
+        (s, i) => `
+        <li class="tile glow" style="${tone(i)}">
+          <strong data-count="${Number(s.value) || 0}" data-prefix="${esc(s.prefix || "")}" data-suffix="${esc(s.suffix || "")}">${esc(s.prefix || "")}0${esc(s.suffix || "")}</strong>
+          <span>${esc(s.label)}</span>
+        </li>`
+      )
+      .join("");
+  }
+
+  function awards(el) {
+    if (!el) return;
+    el.innerHTML = data.achievements
+      .map(
+        (a, i) => `
+        <article class="award glow reveal" style="${tone(i)}">
+          <span class="award__icon">${ICONS.star}</span>
+          <h3 class="award__title">${esc(a.title)}</h3>
+          <p class="award__org mono">${esc(a.org)}</p>
+          <p class="award__text">${esc(a.text)}</p>
+        </article>`
+      )
+      .join("");
+  }
+
+  /* ---------- Home ---------- */
+  function renderHome() {
+    const nameEl = $("#heroName");
+    if (!nameEl) return;
+    $("#heroGreet").textContent = data.greeting;
+    $("#heroNameText").textContent = `${data.name}!`;
+    nameEl.innerHTML = [...`${data.name}!`].map((c) => `<span class="ch"><span>${esc(c)}</span></span>`).join("");
+    $("#heroBadge").textContent = data.heroBadge || data.role;
     $("#heroRole").textContent = data.role;
     $("#heroTagline").textContent = data.tagline;
-    $("#heroLocation").textContent = data.location;
-    $("#availability").hidden = !data.available;
-    $("#year").textContent = new Date().getFullYear();
-    if (data.resumeUrl) Object.assign($("#resumeBtn"), { href: data.resumeUrl, hidden: false });
-
-    const ring = "scroll · explore · scroll · explore · ";
-    $(".portrait__ring").innerHTML = [...ring]
-      .map((c, i) => `<span style="transform: translateX(-50%) rotate(${(360 / ring.length) * i}deg)">${c === " " ? "&nbsp;" : esc(c)}</span>`)
+    $("#heroCompanies").innerHTML = data.experience.map((x) => `<li>${esc(x.company)}</li>`).join("");
+    $("#nowRole").textContent = data.current.role;
+    $("#nowAt").textContent = `at ${data.current.company} · since ${data.current.since}`;
+    statTiles($("#heroStats"));
+    $("#heroChips").innerHTML = data.heroChips
+      .map((c, i) => `<li class="chip-float chip-float--${i}"><span class="chip-float__icon">${ICONS[c.icon] || ICONS.spark}</span>${esc(c.text)}</li>`)
       .join("");
+    mountPhoto($(".portrait__frame"));
 
-    $("#portraitTag").textContent = data.location ? `Based in ${data.location}` : data.role;
-    if (data.photo) {
-      mountPhoto($(".portrait__frame"), "portrait__fallback");
-      mountPhoto($("#aboutPhoto"));
+    const ring = $("[data-ring]");
+    if (ring) {
+      const text = ring.dataset.ring;
+      ring.innerHTML = [...text]
+        .map((c, i) => `<span style="transform: translateX(-50%) rotate(${(360 / text.length) * i}deg)">${c === " " ? "&nbsp;" : esc(c)}</span>`)
+        .join("");
     }
-    $$("[data-calendly]").forEach((a) => (a.href = data.calendlyUrl || "#contact"));
 
     const items = data.marquee.map((m) => `<span>${esc(m)} <i>✦</i></span>`).join("");
     $("#marquee").innerHTML = items + items;
-
     $("#statement").innerHTML = data.statement.split(/\s+/).map((w) => `<span class="w">${esc(w)}</span>`).join(" ");
 
-    $("#filters").innerHTML = data.filters
-      .map((f, i) => `<button class="filter" role="tab" aria-selected="${i === 0}" data-filter="${esc(f)}">${esc(f)}</button>`)
-      .join("");
-
-    $("#worklist").innerHTML = data.projects
-      .map((p, i) => `
-        <li class="work reveal" data-category="${esc(p.category)}" style="${tone(i)}">
-          <button class="work__row" type="button" data-index="${i}">
-            <span class="work__thumb">${p.image ? `<img src="${esc(p.image)}" alt="" loading="lazy">` : pad(i + 1)}</span>
+    $("#xpRows").innerHTML = data.experience
+      .map(
+        (x, i) => `
+        <li class="work reveal" style="${tone(i)}">
+          <button class="work__row" type="button" data-xp="${i}">
             <span class="work__num">${pad(i + 1)}</span>
-            <span class="work__title">${esc(p.title)}<span class="work__summary">${esc(p.summary)}</span></span>
-            <span class="work__cat">${esc(p.category)}</span>
-            <span class="work__year">${esc(p.year)}</span>
+            <span class="work__title">${esc(x.company)}<span class="work__summary">${esc(x.role)}</span></span>
+            <span class="work__cat">${esc(x.tags[0] || "")}</span>
+            <span class="work__year">${esc(x.period)}</span>
             <span class="work__arrow" aria-hidden="true">→</span>
           </button>
-        </li>`)
+        </li>`
+      )
       .join("");
-
-    $("#stats").innerHTML = data.stats
-      .map((s, i) => `<li class="reveal" style="${tone(i)}"><strong data-count="${Number(s.value) || 0}" data-suffix="${esc(s.suffix || "")}">0${esc(s.suffix || "")}</strong><span>${esc(s.label)}</span></li>`)
-      .join("");
+    awards($("#awards"));
 
     $("#servicesList").innerHTML = data.services
-      .map((s, i) => `
-        <article class="service reveal" style="${tone(i + 1)}">
-          <span class="service__num">[${pad(i + 1)}]</span>
+      .map(
+        (s, i) => `
+        <article class="service reveal" style="${tone(i)}">
+          <span class="service__num mono">${pad(i + 1)}</span>
           <h3>${esc(s.title)}</h3>
           <p>${esc(s.detail)}</p>
-          <ul class="chips">${s.tags.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
-        </article>`)
+          ${chips(s.tags)}
+        </article>`
+      )
       .join("");
 
-    $("#process").innerHTML = data.process
+    $("#processList").innerHTML = data.process
       .map((p, i) => `<li class="reveal" style="${tone(i)}"><h3>${esc(p.step)}</h3><p>${esc(p.detail)}</p></li>`)
       .join("");
-
-    $("#aboutText").innerHTML = data.about.paragraphs.map((p) => `<p>${esc(p)}</p>`).join("");
-    $("#skills").innerHTML = data.about.skills.map((s) => `<li>${esc(s)}</li>`).join("");
-    $("#timeline").innerHTML = data.experience
-      .map((e) => `
-        <li>
-          <span class="timeline__period">${esc(e.period)}</span>
-          <div><h3>${esc(e.title)}</h3><span class="timeline__org">${esc(e.org)}</span><p>${esc(e.detail)}</p></div>
-        </li>`)
-      .join("");
-
-    if (data.testimonials.length) {
-      const q = data.testimonials
-        .map((t, i) => `
-          <figure class="quote" style="${tone(i + 2)}">
-            <blockquote>${esc(t.quote)}</blockquote>
-            <figcaption><strong>${esc(t.author)}</strong> · ${esc(t.role)}</figcaption>
-          </figure>`)
-        .join("");
-      $("#quotes").innerHTML = q + q;
-    } else {
-      $("#testimonials").hidden = true;
-    }
-
-    if (data.faq.length) {
-      $("#faqList").innerHTML = data.faq
-        .map((f) => `<details class="reveal"><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`)
-        .join("");
-    } else {
-      $("#faq").hidden = true;
-    }
-
-    Object.assign($("#emailLink"), { href: `mailto:${data.email}`, textContent: data.email });
-    $("#socials").innerHTML = data.socials
-      .filter((s) => s.url)
-      .map((s) => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`)
-      .join("");
-    const options = (list) => list.map((o) => `<option>${esc(o)}</option>`).join("");
-    $("#fType").innerHTML = options(data.projectTypes);
-    $("#fBudget").innerHTML = options(data.budgets);
   }
 
-  /* ---------- Hero name fits the full width ---------- */
+  /* Fit "Ignatius!" to the full width, then line up the gradient across the letters. */
   function fitName() {
     const el = $("#heroName");
+    if (!el) return;
     el.style.fontSize = "100px";
     el.style.width = "max-content";
     const natural = el.getBoundingClientRect().width;
     el.style.width = "";
-    const box = getComputedStyle(el.parentElement);
-    const width = el.parentElement.clientWidth - parseFloat(box.paddingLeft) - parseFloat(box.paddingRight);
-    el.style.fontSize = `${Math.floor((100 * width * 0.995) / natural)}px`;
-    const left = el.getBoundingClientRect().left;
-    const total = el.getBoundingClientRect().width;
+    const box = el.parentElement.getBoundingClientRect().width;
+    el.style.fontSize = `${Math.floor((100 * box * 0.995) / natural)}px`;
+    const { left, width } = el.getBoundingClientRect();
     $$(".ch", el).forEach((ch) => {
       const inner = ch.firstElementChild;
-      inner.style.setProperty("--w", `${total}px`);
+      inner.style.setProperty("--w", `${width}px`);
       inner.style.setProperty("--x", `${left - ch.getBoundingClientRect().left}px`);
     });
   }
 
-  /* ---------- Live clock ---------- */
-  function initClock() {
-    const el = $("#clock");
-    let fmt;
-    try {
-      fmt = new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit", timeZone: data.timezone });
-    } catch {
-      fmt = new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit" });
-    }
-    const tick = () => (el.textContent = fmt.format(new Date()));
-    tick();
-    setInterval(tick, 15000);
-  }
-
-  /* ---------- Filters ---------- */
-  function initFilters() {
-    $("#filters").addEventListener("click", (e) => {
-      const btn = e.target.closest(".filter");
-      if (!btn) return;
-      const f = btn.dataset.filter;
-      $$(".filter").forEach((b) => b.setAttribute("aria-selected", String(b === btn)));
-      $$(".work").forEach((w) => w.classList.toggle("is-hidden", f !== "All" && w.dataset.category !== f));
-    });
-  }
-
-  /* ---------- Case study modal ---------- */
   function initModal() {
     const modal = $("#modal");
-    $("#worklist").addEventListener("click", (e) => {
-      const row = e.target.closest(".work__row");
+    const rows = $("#xpRows");
+    if (!modal || !rows) return;
+    rows.addEventListener("click", (e) => {
+      const row = e.target.closest("[data-xp]");
       if (!row) return;
-      const p = data.projects[row.dataset.index];
-      $("#modalFile").textContent = `${slug(p.title)}.case`;
+      const x = data.experience[row.dataset.xp];
+      $("#modalFile").textContent = `${slug(x.company)}.experience`;
       $("#modalBody").innerHTML = `
-        <p class="label">${esc(p.category)} · ${esc(p.year)}</p>
-        <h3 id="modalTitle">${esc(p.title)}</h3>
+        <p class="label">${esc(x.period)}</p>
+        <h3 id="modalTitle">${esc(x.company)}</h3>
+        <p class="modal__role">${esc(x.role)}</p>
         <div class="modal__facts">
-          <span>Client<b>${esc(p.client || "—")}</b></span>
-          <span>Role<b>${esc(p.role)}</b></span>
-          <span>Year<b>${esc(p.year)}</b></span>
+          <span>Period<b>${esc(x.period)}</b></span>
+          <span>Location<b>${esc(x.location)}</b></span>
+          ${x.award ? `<span>Highlight<b>${esc(x.award)}</b></span>` : ""}
         </div>
-        <div class="modal__media">${p.image ? `<img src="${esc(p.image)}" alt="">` : ""}</div>
-        <h4>Problem</h4><p>${esc(p.caseStudy.problem)}</p>
-        <h4>Process</h4><p>${esc(p.caseStudy.process)}</p>
-        <h4>Outcome</h4><p>${esc(p.caseStudy.outcome)}</p>
-        <ul class="chips" style="margin-top:22px">${p.tags.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
-        ${p.link ? `<a class="btn btn--primary" href="${esc(p.link)}" target="_blank" rel="noopener">View live project ↗</a>` : ""}`;
-      $("#preview").classList.remove("is-visible");
+        <p class="modal__summary">${esc(x.summary)}</p>
+        <h4>What I did</h4>
+        <ul class="checklist">${x.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
+        ${chips(x.tags)}
+        <a class="btn btn--primary" href="${root}experience.html#xp-${slug(x.company)}">Open on the experience page <span aria-hidden="true">→</span></a>`;
+      $("#preview")?.classList.remove("is-visible");
       modal.showModal();
     });
     $("#modalClose").addEventListener("click", () => modal.close());
     modal.addEventListener("click", (e) => { if (e.target === modal) modal.close(); });
   }
 
-  /* ---------- Nav: menu, hide on scroll down, active section ---------- */
+  /* ---------- Experience page ---------- */
+  function renderExperiencePage() {
+    const list = $("#xpTimeline");
+    if (!list) return;
+    statTiles($("#xpStats"));
+    list.innerHTML = data.experience
+      .map((x, i) => {
+        const mark = x.company.replace(/[^A-Za-z]/g, "").slice(0, 2);
+        return `
+        <li class="xp__item glow reveal" id="xp-${slug(x.company)}" style="${tone(i)}">
+          <div class="xp__side">
+            <span class="xp__mark" aria-hidden="true">${esc(mark.charAt(0).toUpperCase() + mark.slice(1))}</span>
+            <p class="xp__period mono">${esc(x.period)}</p>
+            <p class="xp__company">${esc(x.company)}</p>
+            <p class="xp__location">${esc(x.location)}</p>
+          </div>
+          <div class="xp__main">
+            <h2 class="xp__role">${esc(x.role)}</h2>
+            <p class="xp__summary">${esc(x.summary)}</p>
+            <ul class="checklist">${x.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
+            <div class="xp__foot">
+              ${chips(x.tags)}
+              ${x.award ? `<p class="xp__award"><span class="xp__award-icon">${ICONS.star}</span>${esc(x.award)}</p>` : ""}
+            </div>
+          </div>
+        </li>`;
+      })
+      .join("");
+    awards($("#awards"));
+    if (location.hash) requestAnimationFrame(() => document.getElementById(location.hash.slice(1))?.scrollIntoView());
+  }
+
+  /* ---------- About page ---------- */
+  function renderAboutPage() {
+    const text = $("#aboutText");
+    if (!text) return;
+    $("#aboutLead").textContent = data.tagline;
+    text.innerHTML = data.about.paragraphs.map((p) => `<p>${esc(p)}</p>`).join("");
+    mountPhoto($("#aboutPhoto"));
+    $("#facts").innerHTML = data.about.facts
+      .map((f, i) => `<li class="fact glow reveal" style="${tone(i)}"><span class="mono">${esc(f.label)}</span><b>${esc(f.value)}</b></li>`)
+      .join("");
+    $("#toolboxGrid").innerHTML = data.toolbox
+      .map((g, i) => `<article class="tool-group glow reveal" style="${tone(i)}"><h3 class="tool-group__title mono">${esc(g.group)}</h3>${chips(g.items)}</article>`)
+      .join("");
+    $("#competencyCloud").innerHTML = data.competencies.map((c, i) => `<li style="${tone(i)}">${esc(c)}</li>`).join("");
+    $("#certs").innerHTML = data.certifications
+      .map(
+        (c, i) => `
+        <li class="cert glow reveal" style="${tone(i)}">
+          <span class="cert__icon">${ICONS.medal}</span>
+          <p class="cert__name">${esc(c.name)}</p>
+          <p class="cert__issuer mono">${esc(c.issuer)}</p>
+        </li>`
+      )
+      .join("");
+  }
+
+  /* ---------- Blog ---------- */
+  function initBlogFilter() {
+    const bar = $("#tagFilter");
+    if (!bar) return;
+    if (!bar.querySelector("[data-tag]")) return bar.remove();
+    bar.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-tag]");
+      if (!btn) return;
+      const tag = btn.dataset.tag;
+      $$("[data-tag]", bar).forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      let shown = 0;
+      $$(".post-card").forEach((card) => {
+        const on = !tag || card.dataset.tags.split("|").includes(tag);
+        card.hidden = !on;
+        if (on) shown++;
+      });
+      $("#postNone").hidden = shown > 0;
+    });
+  }
+
+  /* ---------- Nav: menu, hide on scroll, progress ---------- */
   function initNav() {
     const nav = $("#nav");
     const toggle = $("#navToggle");
-    const setOpen = (open) => { nav.classList.toggle("is-open", open); toggle.setAttribute("aria-expanded", String(open)); };
+    const setOpen = (open) => {
+      nav.classList.toggle("is-open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    };
     toggle.addEventListener("click", () => setOpen(!nav.classList.contains("is-open")));
     $("#navLinks").addEventListener("click", (e) => { if (e.target.closest("a")) setOpen(false); });
 
@@ -225,29 +319,95 @@
       lastY = y;
       progress.style.transform = `scaleX(${y / Math.max(1, document.documentElement.scrollHeight - innerHeight)})`;
     }, { passive: true });
-
-    const links = $$(".nav__links a");
-    const spy = new IntersectionObserver((entries) => {
-      entries.forEach((en) => {
-        if (en.isIntersecting) links.forEach((a) => a.classList.toggle("is-active", a.getAttribute("href") === `#${en.target.id}`));
-      });
-    }, { rootMargin: "-45% 0px -50% 0px" });
-    ["work", "services", "about", "contact"].forEach((id) => spy.observe(document.getElementById(id)));
   }
 
-  /* ---------- Copy email ---------- */
+  function initClock() {
+    const clocks = $$("[data-clock]");
+    if (!clocks.length) return;
+    let fmt;
+    try {
+      fmt = new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit", timeZone: data.timezone });
+    } catch {
+      fmt = new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit" });
+    }
+    const tick = () => clocks.forEach((el) => (el.textContent = fmt.format(new Date())));
+    tick();
+    setInterval(tick, 15000);
+  }
+
+  /* ---------- Copy buttons + toast ---------- */
+  function toast(msg) {
+    const t = $("#toast");
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add("is-visible");
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove("is-visible"), 1800);
+  }
+
+  async function copyText(text, done) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast(done);
+    } catch {
+      toast(text);
+    }
+  }
+
   function initCopy() {
-    const toast = $("#toast");
-    $("#copyEmail").addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(data.email);
-        toast.textContent = "✓ email copied";
-      } catch {
-        toast.textContent = data.email;
+    $$("[data-copy-email]").forEach((b) => b.addEventListener("click", () => copyText(data.email, "✓ Email copied")));
+    $$("[data-copy-link]").forEach((b) => b.addEventListener("click", () => copyText(location.href, "✓ Link copied")));
+  }
+
+  /* ---------- Contact form ---------- */
+  function initForm() {
+    const form = $("#contactForm");
+    if (!form) return;
+    const status = $("#formStatus");
+    const submit = $("#formSubmit");
+    const say = (msg, kind = "") => { status.textContent = msg; status.className = `form__status ${kind && `is-${kind}`}`; };
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      let firstBad = null;
+      [$("#fName"), $("#fEmail"), $("#fMessage")].forEach((f) => {
+        const bad = !f.value.trim() || (f.type === "email" && !/^\S+@\S+\.\S+$/.test(f.value.trim()));
+        f.closest(".field").classList.toggle("is-invalid", bad);
+        if (bad && !firstBad) firstBad = f;
+      });
+      if (firstBad) {
+        say("Please add your name, a valid email and a short message.", "error");
+        firstBad.focus();
+        return;
       }
-      toast.classList.add("is-visible");
-      clearTimeout(toast._t);
-      toast._t = setTimeout(() => toast.classList.remove("is-visible"), 1800);
+      if (form._gotcha.value) return; // spam bot
+
+      const entry = Object.fromEntries(new FormData(form));
+      delete entry._gotcha;
+
+      if (!data.formEndpoint) {
+        const body = `Name: ${entry.name}\nEmail: ${entry.email}\nCompany: ${entry.company || "-"}\nAbout: ${entry.topic}\n\n${entry.message}`;
+        location.href = `mailto:${data.email}?subject=${encodeURIComponent(`${entry.topic} — ${entry.name}`)}&body=${encodeURIComponent(body)}`;
+        say(`Your email app should open with the message ready to send. If it doesn't, write to ${data.email}.`);
+        return;
+      }
+
+      submit.disabled = true;
+      say("Sending…");
+      try {
+        const res = await fetch(data.formEndpoint, {
+          method: "POST",
+          headers: { Accept: "application/json", "Content-Type": "application/json" },
+          body: JSON.stringify(entry),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        say("Thanks! Your message is on its way. I'll reply within two working days.", "ok");
+      } catch {
+        say(`Your message couldn't be sent. Please try again, or email ${data.email}.`, "error");
+      } finally {
+        submit.disabled = false;
+      }
     });
   }
 
@@ -272,19 +432,18 @@
 
   function countUp(el) {
     const target = Number(el.dataset.count);
-    const suffix = el.dataset.suffix;
-    if (reduceMotion || !target) { el.textContent = target + suffix; return; }
+    const { prefix = "", suffix = "" } = el.dataset;
+    if (reduceMotion || !target) { el.textContent = prefix + target + suffix; return; }
     const start = performance.now();
     const dur = 1400;
     const step = (t) => {
       const k = Math.min(1, (t - start) / dur);
-      el.textContent = Math.round(target * (1 - Math.pow(1 - k, 3))) + suffix;
+      el.textContent = prefix + Math.round(target * (1 - Math.pow(1 - k, 3))) + suffix;
       if (k < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
   }
 
-  /* ---------- Reveal on scroll ---------- */
   function initReveal() {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((en) => {
@@ -295,18 +454,19 @@
         $$("[data-count]", el).forEach(countUp);
         io.unobserve(el);
       });
-    }, { threshold: 0.15 });
+    }, { threshold: 0.12 });
     $$(".reveal").forEach((el) => {
       const siblings = [...el.parentElement.children].filter((c) => c.classList.contains("reveal"));
-      el.style.transitionDelay = `${Math.min(siblings.indexOf(el), 5) * 90}ms`;
+      el.style.transitionDelay = `${Math.min(siblings.indexOf(el), 5) * 80}ms`;
       io.observe(el);
     });
+    $$("[data-count]").filter((el) => !el.closest(".reveal")).forEach(countUp);
   }
 
-  /* ---------- Statement lights up word by word as you scroll ---------- */
   function initStatement() {
-    const words = $$("#statement .w");
     const box = $("#statement");
+    if (!box) return;
+    const words = $$(".w", box);
     const update = () => {
       const r = box.getBoundingClientRect();
       const k = Math.min(1, Math.max(0, (innerHeight * 0.85 - r.top) / (r.height + innerHeight * 0.35)));
@@ -317,65 +477,90 @@
     update();
   }
 
-  /* ---------- Pointer effects: cursor, project preview, magnetic, glow ---------- */
+  /* ---------- Hover effects: spotlight, glowing borders, tilt, parallax, magnetic, preview ---------- */
   function initPointerFx() {
     if (!finePointer || reduceMotion) return;
 
-    const cursor = $("#cursor");
-    const label = $(".cursor__label", cursor);
-    const preview = $("#preview");
-    let x = innerWidth / 2, y = innerHeight / 2, cx = x, cy = y, px = x, py = y;
-
+    // A soft light that follows the pointer across the page.
+    const spot = $("#spotlight");
+    let x = innerWidth / 2, y = innerHeight / 3, sx = x, sy = y;
     addEventListener("pointermove", (e) => {
-      x = e.clientX; y = e.clientY;
-      cursor.classList.add("is-visible");
-      const row = e.target.closest(".work__row");
-      cursor.classList.toggle("is-view", !!row);
-      label.textContent = row ? "view" : "";
-      cursor.classList.toggle("is-hover", !row && !!e.target.closest("a, button, summary"));
-    });
-    document.addEventListener("pointerleave", () => cursor.classList.remove("is-visible"));
+      x = e.clientX;
+      y = e.clientY;
+      spot?.classList.add("is-on");
+      // Borders and dark panels light up where the pointer is.
+      for (let el = e.target.closest?.(".glow, [data-glow]"); el; el = el.parentElement?.closest(".glow, [data-glow]")) {
+        const r = el.getBoundingClientRect();
+        el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+        el.style.setProperty("--my", `${e.clientY - r.top}px`);
+      }
+    }, { passive: true });
+    document.documentElement.addEventListener("pointerleave", () => spot?.classList.remove("is-on"));
 
-    $("#worklist").addEventListener("pointerover", (e) => {
-      const row = e.target.closest(".work__row");
-      if (!row) return;
-      const i = Number(row.dataset.index);
-      const p = data.projects[i];
-      preview.style.setProperty("--c", `var(--c${i % 6})`);
-      preview.innerHTML = p.image ? `<img src="${esc(p.image)}" alt="">` : pad(i + 1);
-      preview.classList.add("is-visible");
+    // Cards and the portrait lean towards the pointer.
+    $$(".tilt").forEach((el) => {
+      const max = Number(el.dataset.tilt || 6);
+      el.addEventListener("pointermove", (e) => {
+        const r = el.getBoundingClientRect();
+        el.classList.add("is-tilting");
+        el.style.setProperty("--ry", `${((e.clientX - r.left) / r.width - 0.5) * max}deg`);
+        el.style.setProperty("--rx", `${(0.5 - (e.clientY - r.top) / r.height) * max}deg`);
+      });
+      el.addEventListener("pointerleave", () => {
+        el.classList.remove("is-tilting");
+        el.style.setProperty("--rx", "0deg");
+        el.style.setProperty("--ry", "0deg");
+      });
     });
-    $("#worklist").addEventListener("pointerleave", () => preview.classList.remove("is-visible"));
 
-    (function loop() {
-      cx += (x - cx) * 0.22; cy += (y - cy) * 0.22;
-      px += (x - px) * 0.1; py += (y - py) * 0.1;
-      cursor.style.transform = `translate(${cx}px, ${cy}px)`;
-      preview.style.transform = `translate(${px}px, ${py}px) rotate(${(x - px) * 0.04}deg)`;
-      requestAnimationFrame(loop);
-    })();
+    // Hero badges drift with the pointer at different depths.
+    const hero = $("[data-hero]");
+    hero?.addEventListener("pointermove", (e) => {
+      const r = hero.getBoundingClientRect();
+      hero.style.setProperty("--px", ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
+      hero.style.setProperty("--py", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
+    });
 
     $$(".magnetic").forEach((btn) => {
       btn.addEventListener("pointermove", (e) => {
         const r = btn.getBoundingClientRect();
-        btn.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.25}px, ${(e.clientY - r.top - r.height / 2) * 0.35}px)`;
+        btn.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.2}px, ${(e.clientY - r.top - r.height / 2) * 0.3}px)`;
       });
       btn.addEventListener("pointerleave", () => (btn.style.transform = ""));
     });
 
-    $$(".service").forEach((card) => {
-      card.addEventListener("pointermove", (e) => {
-        const r = card.getBoundingClientRect();
-        card.style.setProperty("--mx", `${e.clientX - r.left}px`);
-        card.style.setProperty("--my", `${e.clientY - r.top}px`);
+    // Experience rows: a card follows the pointer.
+    const preview = $("#preview");
+    const rows = $("#xpRows");
+    let px = x, py = y;
+    if (preview && rows) {
+      rows.addEventListener("pointerover", (e) => {
+        const row = e.target.closest("[data-xp]");
+        if (!row) return;
+        const i = Number(row.dataset.xp);
+        const xp = data.experience[i];
+        preview.style.setProperty("--c", `var(--c${i % 6})`);
+        preview.innerHTML = `<span class="preview__name">${esc(xp.company)}</span><span class="preview__meta mono">${esc(xp.period)}</span><span class="preview__cta mono">Click for details ↗</span>`;
+        preview.classList.add("is-visible");
       });
-    });
+      rows.addEventListener("pointerleave", () => preview.classList.remove("is-visible"));
+    }
+
+    (function loop() {
+      sx += (x - sx) * 0.12;
+      sy += (y - sy) * 0.12;
+      px += (x - px) * 0.14;
+      py += (y - py) * 0.14;
+      if (spot) spot.style.transform = `translate(${sx}px, ${sy}px)`;
+      if (preview) preview.style.transform = `translate(${px}px, ${py}px) rotate(${(x - px) * 0.05}deg)`;
+      requestAnimationFrame(loop);
+    })();
   }
 
   /* ---------- Particle network ---------- */
   function initNetwork() {
-    if (reduceMotion) return;
     const canvas = $("#net");
+    if (!canvas || reduceMotion) return;
     const ctx = canvas.getContext("2d");
     const mouse = { x: -9999, y: -9999 };
     let w, h, dpr, points = [];
@@ -384,14 +569,14 @@
       dpr = Math.min(devicePixelRatio || 1, 2);
       w = canvas.width = innerWidth * dpr;
       h = canvas.height = innerHeight * dpr;
-      const count = Math.min(70, Math.round((innerWidth * innerHeight) / 20000));
+      const count = Math.min(60, Math.round((innerWidth * innerHeight) / 24000));
       points = Array.from({ length: count }, () => ({
         x: Math.random() * w, y: Math.random() * h,
         vx: (Math.random() - 0.5) * 0.3 * dpr, vy: (Math.random() - 0.5) * 0.3 * dpr,
       }));
     }
     addEventListener("resize", resize);
-    addEventListener("pointermove", (e) => { mouse.x = e.clientX * dpr; mouse.y = e.clientY * dpr; });
+    addEventListener("pointermove", (e) => { mouse.x = e.clientX * dpr; mouse.y = e.clientY * dpr; }, { passive: true });
     resize();
 
     (function draw() {
@@ -411,11 +596,11 @@
             const b = points[j];
             const d = Math.hypot(a.x - b.x, a.y - b.y);
             if (d < max) {
-              ctx.strokeStyle = `rgba(108, 71, 255, ${(1 - d / max) * 0.18})`;
+              ctx.strokeStyle = `rgba(108, 71, 255, ${(1 - d / max) * 0.16})`;
               ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
             }
           }
-          ctx.fillStyle = "rgba(18, 15, 43, 0.25)";
+          ctx.fillStyle = "rgba(18, 15, 43, 0.22)";
           ctx.fillRect(a.x - dpr, a.y - dpr, 2 * dpr, 2 * dpr);
         }
       }
@@ -423,9 +608,10 @@
     })();
   }
 
-  /* ---------- Loader: greetings + gradient ring ---------- */
+  /* ---------- Loader (home, first visit): greetings + gradient ring ---------- */
   function preload(done) {
-    if (reduceMotion || storage.get("loaded")) return done();
+    const el = $("#loader");
+    if (!el || reduceMotion || storage.get("loaded")) { el?.remove(); return done(); }
     storage.set("loaded", "1");
     document.body.classList.add("is-loading");
     const word = $("#loaderWord");
@@ -443,7 +629,6 @@
       finished = true;
       removeEventListener("keydown", finish);
       removeEventListener("pointerdown", finish);
-      const el = $("#loader");
       el.classList.add("is-done");
       setTimeout(done, 350);
       setTimeout(() => { document.body.classList.remove("is-loading"); el.remove(); }, 1000);
@@ -451,6 +636,7 @@
     addEventListener("keydown", finish);
     addEventListener("pointerdown", finish);
 
+    word.textContent = greetings[0];
     (function step(t) {
       if (finished) return;
       const k = Math.min(1, (t - start) / dur);
@@ -466,68 +652,18 @@
       if (k < 1) requestAnimationFrame(step);
       else setTimeout(finish, 350);
     })(start);
-    word.textContent = greetings[0];
   }
 
-  /* ---------- Contact form ---------- */
-  function initForm() {
-    const form = $("#contactForm");
-    const status = $("#formStatus");
-    const submit = $("#formSubmit");
-    const say = (msg, kind = "") => { status.textContent = msg; status.className = `form__status ${kind && `is-${kind}`}`; };
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fields = [$("#fName"), $("#fEmail"), $("#fMessage")];
-      let firstBad = null;
-      fields.forEach((f) => {
-        const bad = !f.value.trim() || (f.type === "email" && !/^\S+@\S+\.\S+$/.test(f.value.trim()));
-        f.closest(".field").classList.toggle("is-invalid", bad);
-        if (bad && !firstBad) firstBad = f;
-      });
-      if (firstBad) {
-        say("Please fill in your name, a valid email and a short message.", "error");
-        firstBad.focus();
-        return;
-      }
-      if (form._gotcha.value) return; // spam bot
-
-      const entry = Object.fromEntries(new FormData(form));
-      delete entry._gotcha;
-
-      if (!data.formEndpoint) {
-        const body = `Name: ${entry.name}\nEmail: ${entry.email}\nProject: ${entry.project_type}\nBudget: ${entry.budget}\n\n${entry.message}`;
-        location.href = `mailto:${data.email}?subject=${encodeURIComponent(`New project enquiry from ${entry.name}`)}&body=${encodeURIComponent(body)}`;
-        say(`Your email app should open with the message ready to send. If it doesn't, write to ${data.email}.`);
-        return;
-      }
-
-      submit.disabled = true;
-      say("Sending…");
-      try {
-        const res = await fetch(data.formEndpoint, {
-          method: "POST",
-          headers: { Accept: "application/json", "Content-Type": "application/json" },
-          body: JSON.stringify(entry),
-        });
-        if (!res.ok) throw new Error(String(res.status));
-        form.reset();
-        say("Thanks! Your message is on its way. I'll reply within two working days.", "ok");
-      } catch {
-        say(`Your message couldn't be sent. Please try again, or email ${data.email}.`, "error");
-      } finally {
-        submit.disabled = false;
-      }
-    });
-  }
-
-  render();
+  renderCommon();
+  renderHome();
+  renderExperiencePage();
+  renderAboutPage();
   fitName();
   addEventListener("resize", fitName);
   if (document.fonts) document.fonts.ready.then(fitName);
   initClock();
-  initFilters();
   initModal();
+  initBlogFilter();
   initNav();
   initCopy();
   initForm();

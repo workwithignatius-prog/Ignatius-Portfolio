@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- include:head -->
+<meta property="article:published_time" content="{{dateISO}}">
+</head>
+<body id="top" data-page="post" data-root="{{root}}">
+<!-- include:bg -->
+<!-- include:nav -->
+
+<main id="main">
+  <article class="post">
+    <header class="post-head">
+      <a class="back-link" href="{{root}}blog/">← All posts</a>
+      {{{draftHtml}}}
+      <ul class="post-tags">{{{tagsHtml}}}</ul>
+      <h1 class="post-title">{{title}}</h1>
+      <p class="post-lead">{{description}}</p>
+      <div class="post-meta">
+        <img class="post-meta__avatar" src="{{root}}assets/me.jpg" alt="" width="48" height="48">
+        <div>
+          <b>{{fullName}}</b>
+          <span class="mono"><time datetime="{{dateISO}}">{{dateLabel}}</time> · {{readingTime}} min read</span>
+        </div>
+      </div>
+    </header>
+
+    {{{coverHtml}}}
+
+    <div class="prose">
+{{{content}}}
+    </div>
+
+    <footer class="post-foot">
+      <div class="share">
+        <span class="share__label mono">Share</span>
+        <a class="share__btn" href="https://www.linkedin.com/sharing/share-offsite/?url={{urlEncoded}}" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="share__btn" href="https://twitter.com/intent/tweet?url={{urlEncoded}}&amp;text={{titleEncoded}}" target="_blank" rel="noopener">X</a>
+        <button class="share__btn" type="button" data-copy-link>Copy link</button>
+      </div>
+
+      <aside class="author glow" aria-label="About the author">
+        <img class="author__photo" src="{{root}}assets/me.jpg" alt="" width="88" height="88">
+        <div class="author__text">
+          <p class="mono author__label">Written by</p>
+          <p class="author__name">{{fullName}}</p>
+          <p class="author__bio">{{role}} in {{location}}. I write about presales, solution engineering, SaaS and AI.</p>
+        </div>
+        <a class="btn btn--primary btn--small" data-calendly href="{{root}}contact.html">Let's talk</a>
+      </aside>
+
+      <nav class="post-nav" aria-label="More posts">{{{postNavHtml}}}</nav>
+    </footer>
+  </article>
+</main>
+
+<!-- include:footer -->
+<!-- include:scripts -->
+</body>
+</html>
