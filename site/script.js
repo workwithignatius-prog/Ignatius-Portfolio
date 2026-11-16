@@ -11,7 +11,8 @@
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item";
   const pad = (n) => String(n).padStart(2, "0");
-  const tone = (i) => `--c: var(--c${i % 6})`;
+  // The palette colour for item i, its shade for text on paper, and the text colour to put on top of it.
+  const tone = (i) => `--c: var(--c${i % 6}); --ct: var(--c${i % 6}-t); --con: var(--c${i % 6}-on)`;
   const asset = (p) => (/^(https?:)?\/\//.test(p) ? p : root + String(p).replace(/^\//, ""));
   const social = (label) => (data.socials || []).find((s) => s.label.toLowerCase() === label.toLowerCase() && s.url);
   const chips = (list) => `<ul class="chips">${list.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`;
@@ -50,6 +51,7 @@
   /* ---------- Shared on every page ---------- */
   function renderCommon() {
     $$("[data-calendly]").forEach((a) => {
+      if (a.dataset.cursor) a.dataset.cursor = data.calendlyUrl ? "Book a call" : "Say hi";
       if (!data.calendlyUrl) return;
       a.href = data.calendlyUrl;
       a.target = "_blank";
@@ -120,7 +122,7 @@
           ? `<a class="album__sleeve" href="${esc(p.link)}" target="_blank" rel="noopener" data-cursor="Open">${inner}</a>`
           : `<button class="album__sleeve" type="button" aria-pressed="false" aria-label="Spin the ${esc(p.title)} record" data-cursor="Play">${inner}</button>`;
         return `
-        <article class="album reveal" style="--c: var(--c${i % 6}); --c-pair: var(--c${(i + 2) % 6})">
+        <article class="album reveal" style="${tone(i)}">
           ${sleeve}
           <h3 class="album__title">${esc(p.title)}</h3>
           <p class="album__tag">${esc(p.tagline)}</p>
@@ -164,14 +166,27 @@
     if (!nameEl) return;
     $("#heroGreet").textContent = data.greeting;
     $("#heroNameText").textContent = `${data.name}!`;
-    nameEl.innerHTML = [...`${data.name}!`].map((c) => `<span class="ch"><span>${esc(c)}</span></span>`).join("");
+    nameEl.innerHTML = [...`${data.name}!`]
+      .map((c, i) => `<span class="ch" style="--hc: var(--c${i % 6}); --n: ${i}"><span>${esc(c)}</span></span>`)
+      .join("");
     $("#heroBadge").textContent = data.heroBadge || data.role;
     $("#heroRole").textContent = data.role;
     $("#heroTagline").textContent = data.tagline;
     $("#heroNow").innerHTML = `Currently <b>${esc(data.current.role)}</b> at <b>${esc(data.current.company)}</b>`;
     $("#heroCompanies").innerHTML = data.experience.map((x) => `<li>${esc(x.company)}</li>`).join("");
-    $("#orbit").innerHTML = (data.passions || [])
-      .map((p, i) => `<li class="orbit__item" style="${tone(i)}"><span class="orbit__icon">${ICONS[p.art] || ICONS.music}</span><span class="orbit__label">${esc(p.title)}</span></li>`)
+    // Passions as chat messages, alternating either side of the portrait from top to bottom.
+    const passions = data.passions || [];
+    $("#chat").innerHTML = passions
+      .map((p, i) => {
+        const top = passions.length > 1 ? 4 + (i * 84) / (passions.length - 1) : 40;
+        return `
+        <li class="chat__msg" style="${tone(i)}; --i: ${i}; --top: ${top.toFixed(1)}%">
+          <a class="chat__bubble" href="#b-sides" data-album="${i}" data-cursor="Play">
+            <span class="chat__typing" aria-hidden="true"><span><i></i><i></i><i></i></span></span>
+            <span class="chat__body"><span>${ICONS[p.art] || ICONS.music}${esc(p.title)}</span></span>
+          </a>
+        </li>`;
+      })
       .join("");
     mountPhoto($(".portrait__frame"));
     numbers($("#xpNumbers"));
@@ -214,7 +229,7 @@
       .join("");
   }
 
-  /* Fit "Ignatius!" to the full width, then line up the gradient across the letters. */
+  /* Fit "Ignatius!" to the full width. */
   function fitName() {
     const el = $("#heroName");
     if (!el) return;
@@ -224,12 +239,6 @@
     el.style.width = "";
     const box = el.parentElement.getBoundingClientRect().width;
     el.style.fontSize = `${Math.floor((100 * box * 0.995) / natural)}px`;
-    const { left, width } = el.getBoundingClientRect();
-    $$(".ch", el).forEach((ch) => {
-      const inner = ch.firstElementChild;
-      inner.style.setProperty("--w", `${width}px`);
-      inner.style.setProperty("--x", `${left - ch.getBoundingClientRect().left}px`);
-    });
   }
 
   function initModal() {
@@ -501,7 +510,7 @@
     }, { threshold: 0.12 });
     $$(".reveal").forEach((el) => {
       const siblings = [...el.parentElement.children].filter((c) => c.classList.contains("reveal"));
-      el.style.transitionDelay = `${Math.min(siblings.indexOf(el), 5) * 80}ms`;
+      el.style.setProperty("--rd", `${Math.min(siblings.indexOf(el), 5) * 80}ms`);
       io.observe(el);
     });
     $$("[data-count]").filter((el) => !el.closest(".reveal")).forEach(countUp);
@@ -521,27 +530,17 @@
     update();
   }
 
-  /* ---------- Hover effects: spotlight, glowing borders, tilt, parallax, magnetic, preview ---------- */
+  /* ---------- Hover effects: tilt, parallax, magnetic buttons, logo preview ---------- */
   function initPointerFx() {
     if (!finePointer || reduceMotion) return;
 
-    // A soft light that follows the pointer across the page.
-    const spot = $("#spotlight");
-    let x = innerWidth / 2, y = innerHeight / 3, sx = x, sy = y;
+    let x = innerWidth / 2, y = innerHeight / 3;
     addEventListener("pointermove", (e) => {
       x = e.clientX;
       y = e.clientY;
-      spot?.classList.add("is-on");
-      // Borders and dark panels light up where the pointer is.
-      for (let el = e.target.closest?.(".glow, [data-glow]"); el; el = el.parentElement?.closest(".glow, [data-glow]")) {
-        const r = el.getBoundingClientRect();
-        el.style.setProperty("--mx", `${e.clientX - r.left}px`);
-        el.style.setProperty("--my", `${e.clientY - r.top}px`);
-      }
     }, { passive: true });
-    document.documentElement.addEventListener("pointerleave", () => spot?.classList.remove("is-on"));
 
-    // Cards and the portrait lean towards the pointer.
+    // The portrait leans towards the pointer.
     $$(".tilt").forEach((el) => {
       const max = Number(el.dataset.tilt || 6);
       el.addEventListener("pointermove", (e) => {
@@ -557,7 +556,7 @@
       });
     });
 
-    // Hero badges drift with the pointer at different depths.
+    // The hero chat bubbles drift against the pointer.
     const hero = $("[data-hero]");
     hero?.addEventListener("pointermove", (e) => {
       const r = hero.getBoundingClientRect();
@@ -586,6 +585,7 @@
         if (preview.dataset.xp === String(i) && preview.classList.contains("is-visible")) return;
         preview.dataset.xp = String(i);
         preview.style.setProperty("--c", `var(--c${i % 6})`);
+        preview.style.setProperty("--ct", `var(--c${i % 6}-t)`);
         preview.innerHTML = `
           <span class="preview__logo">${xp.logo ? `<img src="${esc(asset(xp.logo))}" alt="">` : `<span class="preview__word">${esc(xp.company)}</span>`}</span>
           <span class="preview__meta"><b>${esc(xp.company)}</b><span class="mono">${esc(xp.period)}</span></span>`;
@@ -596,129 +596,99 @@
       rows.addEventListener("pointerleave", () => { preview.classList.remove("is-visible"); delete preview.dataset.xp; });
     }
 
+    if (!preview) return;
     (function loop() {
-      sx += (x - sx) * 0.12;
-      sy += (y - sy) * 0.12;
       px += (x - px) * 0.14;
       py += (y - py) * 0.14;
-      if (spot) spot.style.transform = `translate(${sx}px, ${sy}px)`;
-      if (preview) preview.style.transform = `translate(${px + 72}px, ${py - 110}px) rotate(${(x - px) * 0.05}deg)`;
+      preview.style.transform = `translate(${px + 72}px, ${py - 110}px) rotate(${(x - px) * 0.05}deg)`;
       requestAnimationFrame(loop);
     })();
   }
 
-  /* ---------- Custom cursor: an inverting dot and ring, a colour trail, labels on hover ---------- */
+  /* ---------- Custom cursor: a chat-bubble pin that swings as it moves and says what a click does ---------- */
   function initCursor() {
     const cursor = $("#cursor");
     if (!cursor) return;
     if (!finePointer || reduceMotion) return cursor.remove();
     document.documentElement.classList.add("has-cursor");
-    const ring = $(".cursor__ring", cursor);
-    const dot = $(".cursor__dot", cursor);
+    const bubble = $(".cursor__bubble", cursor);
     const label = $(".cursor__label", cursor);
-    const trailBox = $(".cursor__trail", cursor);
-    const stops = [[108, 71, 255], [180, 60, 255], [255, 62, 138], [255, 176, 32]];
-    const mix = (t) => {
-      const k = t * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(k)), f = k - i;
-      return `rgb(${stops[i].map((c, j) => Math.round(c + (stops[i + 1][j] - c) * f)).join(",")})`;
-    };
-    const N = 12;
-    trailBox.innerHTML = Array.from({ length: N }, (_, i) => `<i style="background:${mix(i / (N - 1))}"></i>`).join("");
-    const trail = [...trailBox.children].map((el) => ({ el, x: -100, y: -100 }));
-    let x = -100, y = -100, rx = x, ry = y, lastX = x, lastY = y, speed = 0, seen = false;
+    let x = -100, y = -100, lastX = x, lastY = y, vx = 0, vy = 0, seen = false;
+    let angle = 0, spin = 0, scale = 1, grow = 0, down = false, mode = "";
+    // Label widths are measured on the mono font; measure again once it has loaded.
+    document.fonts?.ready.then(() => (label.textContent = ""));
 
     const react = (t) => {
       if (!t || !t.closest) return;
       cursor.classList.toggle("is-hidden", !!t.closest("input, textarea, select"));
+      cursor.classList.toggle("is-dark", !!t.closest("[data-dark]"));
       const labelled = t.closest("[data-cursor], .work__row");
       const text = labelled ? labelled.dataset.cursor || "View" : "";
-      if (text) label.textContent = text;
-      cursor.classList.toggle("is-label", !!text);
-      cursor.classList.toggle("is-link", !text && !!t.closest("a, button, summary, label, [role='button']"));
+      if (text && text !== label.textContent) {
+        label.textContent = text;
+        cursor.style.setProperty("--lw", `${label.offsetWidth + 30}px`);
+      }
+      mode = text ? "label" : t.closest("a, button, summary, label, [role='button']") ? "link" : "";
+      cursor.classList.toggle("is-label", mode === "label");
+      cursor.classList.toggle("is-link", mode === "link");
     };
     addEventListener("pointermove", (e) => {
       x = e.clientX;
       y = e.clientY;
       if (!seen) {
         seen = true;
-        rx = x; ry = y;
-        trail.forEach((t) => { t.x = x; t.y = y; });
+        lastX = x;
+        lastY = y;
       }
       cursor.classList.add("is-visible");
       react(e.target);
     }, { passive: true });
     addEventListener("scroll", () => { if (seen) react(document.elementFromPoint(x, y)); }, { passive: true });
     document.documentElement.addEventListener("pointerleave", () => cursor.classList.remove("is-visible"));
-    addEventListener("pointerdown", () => cursor.classList.add("is-down"));
+    addEventListener("pointerdown", () => (down = true));
     addEventListener("pointerup", () => {
-      cursor.classList.remove("is-down", "is-click");
-      void cursor.offsetWidth;
+      down = false;
+      cursor.classList.remove("is-click");
+      void cursor.offsetWidth; // restart the burst
       cursor.classList.add("is-click");
     });
 
     (function loop() {
-      rx += (x - rx) * 0.22;
-      ry += (y - ry) * 0.22;
-      dot.style.transform = `translate(${x}px, ${y}px)`;
-      ring.style.transform = `translate(${rx}px, ${ry}px)`;
-      let px = x, py = y;
-      trail.forEach((t, i) => {
-        t.x += (px - t.x) * 0.42;
-        t.y += (py - t.y) * 0.42;
-        t.el.style.transform = `translate(${t.x}px, ${t.y}px) scale(${1 - i / N})`;
-        px = t.x;
-        py = t.y;
-      });
-      speed += (Math.hypot(x - lastX, y - lastY) - speed) * 0.2;
+      // The tip sits exactly on the pointer; the bubble hangs from it and swings on a spring.
+      vx += (x - lastX - vx) * 0.3;
+      vy += (y - lastY - vy) * 0.3;
       lastX = x;
       lastY = y;
-      cursor.style.setProperty("--trail", Math.min(1, speed / 10).toFixed(2));
+      const target = mode === "label" ? 0 : Math.max(-38, Math.min(38, (vx - vy) * 1.7));
+      spin = (spin + (target - angle) * 0.14) * 0.78;
+      angle += spin;
+      const size = (mode === "link" ? 1.4 : 1) * (down ? 0.8 : 1);
+      grow = (grow + (size - scale) * 0.22) * 0.68;
+      scale += grow;
+      cursor.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      bubble.style.transform = `rotate(${angle.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
       requestAnimationFrame(loop);
     })();
   }
 
-  /* ---------- Hero: passions orbit the portrait in 3D, passing behind it ---------- */
-  function initOrbit() {
-    const orbit = $("#orbit");
-    const visual = $("#heroVisual");
-    const frame = $(".portrait__frame");
-    if (!orbit || !visual || !frame) return;
-    const items = $$(".orbit__item", orbit);
-    if (!items.length) return;
-    let angle = -Math.PI / 2;
-    let paused = false;
-    let geo = null;
-    visual.addEventListener("pointerenter", () => (paused = true));
-    visual.addEventListener("pointerleave", () => (paused = false));
-
-    const measure = () => {
-      const v = visual.getBoundingClientRect();
-      const f = frame.getBoundingClientRect();
-      const cx = f.left - v.left + f.width / 2;
-      const room = () => Math.min(cx, v.width - cx) - Math.max(...items.map((it) => it.offsetWidth)) / 2 - 4;
-      orbit.classList.remove("orbit--compact");
-      if (room() < f.width * 0.5) orbit.classList.add("orbit--compact");
-      geo = { cx, cy: f.top - v.top + f.height * 0.62, rx: Math.max(70, Math.min(f.width * 0.74, room())), ry: f.height * 0.16 };
-    };
-    const place = () => {
-      items.forEach((it, i) => {
-        const a = angle + (i / items.length) * Math.PI * 2;
-        const depth = (Math.sin(a) + 1) / 2; // 0 = behind the photo, 1 = in front
-        it.style.transform = `translate(${geo.cx + Math.cos(a) * geo.rx}px, ${geo.cy + Math.sin(a) * geo.ry}px) translate(-50%, -50%) scale(${(0.72 + depth * 0.32).toFixed(3)})`;
-        it.style.zIndex = depth > 0.5 ? 4 : 1;
-        it.style.opacity = (0.4 + depth * 0.6).toFixed(2);
+  /* ---------- Hero: passions arrive as chat messages, typing dots first ---------- */
+  function initChat() {
+    const chat = $("#chat");
+    if (!chat) return () => {};
+    const msgs = $$(".chat__msg", chat);
+    // A bubble jumps to its record in the B-sides and puts it on.
+    chat.addEventListener("click", (e) => {
+      const link = e.target.closest("[data-album]");
+      const sleeve = link && $$("#albums .album__sleeve")[Number(link.dataset.album)];
+      if (sleeve && sleeve.matches("button") && sleeve.getAttribute("aria-pressed") !== "true") setTimeout(() => sleeve.click(), 700);
+    });
+    return () => {
+      if (reduceMotion) return msgs.forEach((m) => m.classList.add("is-sent"));
+      msgs.forEach((m, i) => {
+        setTimeout(() => m.classList.add("is-typing"), 300 + i * 550);
+        setTimeout(() => m.classList.add("is-sent"), 1000 + i * 550);
       });
     };
-    measure();
-    place();
-    addEventListener("resize", () => { measure(); place(); });
-    if (document.fonts) document.fonts.ready.then(() => { measure(); place(); });
-    if (reduceMotion) return;
-    (function loop() {
-      if (!paused) angle += 0.0032;
-      place();
-      requestAnimationFrame(loop);
-    })();
   }
 
   /* ---------- Hero: "… and a music producer / an ad film maker / …" ---------- */
@@ -730,7 +700,10 @@
     if (!words.length) return roller.closest(".hero__roles-also")?.remove();
     const article = (w) => (/^[aeiou]/i.test(w) ? "and an" : "and a");
     const fit = (el) => (roller.style.width = `${el.offsetWidth}px`);
-    roller.innerHTML = `<span class="roller__word">${esc(words[0])}</span>`;
+    // Each role gets its own colour: vermillion, cobalt, green, teal.
+    const colours = ["--c0-t", "--c1-t", "--c3-t", "--c5-t"];
+    const colour = (n) => `var(${colours[n % colours.length]})`;
+    roller.innerHTML = `<span class="roller__word" style="color: ${colour(0)}">${esc(words[0])}</span>`;
     and.textContent = article(words[0]);
     fit(roller.firstElementChild);
     if (document.fonts) document.fonts.ready.then(() => fit(roller.lastElementChild));
@@ -743,6 +716,7 @@
       const old = roller.lastElementChild;
       const next = document.createElement("span");
       next.className = "roller__word is-in";
+      next.style.color = colour(i);
       next.textContent = words[i];
       roller.appendChild(next);
       fit(next);
@@ -755,7 +729,7 @@
     }, 2600);
   }
 
-  /* ---------- Loader (home, first visit): greetings + gradient ring ---------- */
+  /* ---------- Loader (home, first visit): greetings + a ring that fills ---------- */
   function preload(done) {
     const el = $("#loader");
     if (!el || reduceMotion || storage.get("loaded")) { el?.remove(); return done(); }
@@ -817,10 +791,11 @@
   initStatement();
   initPointerFx();
   initCursor();
-  initOrbit();
+  const startChat = initChat();
   initRoller();
   preload(() => {
     document.body.classList.add("is-ready");
     initReveal();
+    startChat();
   });
 })();

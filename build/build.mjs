@@ -266,7 +266,7 @@ function postHtml(html, root) {
 }
 
 function postCard(post, root, i, featured = false) {
-  const tone = `--c: var(--c${i % 6})`;
+  const tone = `--c: var(--c${i % 6}); --ct: var(--c${i % 6}-t); --con: var(--c${i % 6}-on)`;
   const media = post.cover
     ? `<img src="${esc(assetUrl(post.cover, root))}" alt="" loading="lazy">`
     : `<span class="post-card__mark" aria-hidden="true">${esc(post.title.trim().charAt(0).toUpperCase())}</span>`;

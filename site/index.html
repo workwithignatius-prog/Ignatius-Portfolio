@@ -39,7 +39,7 @@ page: home
         <p class="hero__tagline" id="heroTagline"></p>
         <p class="hero__now"><span class="dot"></span> <span id="heroNow"></span></p>
         <div class="hero__cta">
-          <a class="btn btn--primary btn--glow magnetic" data-calendly data-cursor="Book" href="{{root}}contact.html">
+          <a class="btn btn--primary magnetic" data-calendly data-cursor="Say hi" href="{{root}}contact.html">
             <span class="btn__dot" aria-hidden="true"></span> Let's talk
           </a>
           <a class="btn btn--ghost magnetic" href="{{root}}experience.html">View experience <span aria-hidden="true">↘</span></a>
@@ -52,19 +52,21 @@ page: home
       </div>
 
       <div class="hero__visual" id="heroVisual">
-        <figure class="portrait tilt" data-tilt="7" id="portrait">
-          <div class="portrait__frame">
-            <div class="portrait__fallback" aria-hidden="true">IG</div>
-          </div>
-        </figure>
-        <ul class="orbit" id="orbit" aria-label="Beyond work"></ul>
+        <div class="hero__photo">
+          <figure class="portrait tilt" data-tilt="7" id="portrait">
+            <div class="portrait__frame">
+              <div class="portrait__fallback" aria-hidden="true">IG</div>
+            </div>
+          </figure>
+          <ul class="chat" id="chat" aria-label="Beyond work"></ul>
+        </div>
       </div>
     </div>
     <div class="hero__dots" aria-hidden="true"></div>
   </section>
 
   <!-- Marquee -->
-  <div class="marquee" aria-hidden="true"><div class="marquee__track" id="marquee"></div></div>
+  <div class="marquee" aria-hidden="true" data-dark><div class="marquee__track" id="marquee"></div></div>
 
   <!-- Statement -->
   <section class="section statement" id="intro">
@@ -73,7 +75,7 @@ page: home
   </section>
 
   <!-- Experience (dark panel) -->
-  <div class="panel panel--dark" id="experience" data-glow>
+  <div class="panel panel--dark" id="experience" data-dark>
     <section class="section">
       <header class="section__head">
         <div>
