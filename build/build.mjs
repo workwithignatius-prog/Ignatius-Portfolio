@@ -26,6 +26,8 @@ const data = loadContent();
 const SITE_URL = `${(data.siteUrl || "").replace(/\/$/, "")}${DEV ? "/dev" : ""}`;
 const SITE_PATH = SITE_URL ? new URL(SITE_URL).pathname.replace(/\/?$/, "/") : "/";
 const partials = new Map();
+// Accent colours a post can ask for in its front matter; they map to the site's --c0…--c5 tones.
+const ACCENTS = ["red", "blue", "yellow", "green", "orange", "teal"];
 
 marked.use({ gfm: true });
 
@@ -97,8 +99,13 @@ function renderPost(rel, layout, post, newer, older) {
     titleEncoded: encodeURIComponent(post.title),
     tagsHtml: post.tags.map((t) => `<li>${esc(t)}</li>`).join(""),
     draftHtml: post.draft ? `<p class="post-draft mono">Draft — only visible in the dev preview</p>` : "",
+    // A portrait cover sits beside the title; a landscape one runs wide below it.
+    heroClass: !post.cover ? "" : post.coverSize && post.coverSize.h > post.coverSize.w ? "post-hero--split" : "post-hero--wide",
+    toneStyle: tone(post, 0),
     coverHtml: post.cover
-      ? `<figure class="post-cover"><img src="${esc(assetUrl(post.cover, root))}" alt="${esc(post.coverAlt || "")}"></figure>`
+      ? `<figure class="post-cover"><img src="${esc(assetUrl(post.cover, root))}" alt="${esc(post.coverAlt || "")}"${
+          post.coverSize ? ` width="${post.coverSize.w}" height="${post.coverSize.h}"` : ""
+        }${post.coverPosition ? ` style="object-position: ${esc(post.coverPosition)}"` : ""} fetchpriority="high"></figure>`
       : "",
     content: postHtml(post.html, root),
     postNavHtml: [
@@ -194,7 +201,7 @@ function loadPosts() {
     if (seen.has(p.slug)) throw new Error(`Two posts share the address "blog/${p.slug}/" — give one a different file name or slug`);
     seen.add(p.slug);
   }
-  return posts.sort((a, b) => b.date - a.date || a.title.localeCompare(b.title));
+  return posts.sort((a, b) => b.date - a.date || a.order - b.order || a.title.localeCompare(b.title));
 }
 
 function parsePost(file, src) {
@@ -209,7 +216,17 @@ function parsePost(file, src) {
   if (!meta.title) throw new Error(`${where}: add a title, e.g. "title: My first post"`);
   const slug = slugify(String(meta.slug || (fromName ? fromName[2] : file.replace(/\.md$/, ""))));
   const tags = (Array.isArray(meta.tags) ? meta.tags : String(meta.tags || "").split(",")).map((t) => String(t).trim()).filter(Boolean);
-  const words = body.replace(/```[\s\S]*?```/g, " ").split(/\s+/).filter(Boolean).length;
+  const words = body
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .split(/\s+/)
+    .filter(Boolean).length;
+  const accent = meta.accent ? String(meta.accent).toLowerCase() : "";
+  if (accent && !ACCENTS.includes(accent)) throw new Error(`${where}: accent must be one of ${ACCENTS.join(", ")} — "${meta.accent}"`);
+  const order = meta.order === undefined ? 0 : Number(meta.order);
+  if (!Number.isFinite(order)) throw new Error(`${where}: order must be a number — "${meta.order}"`);
+  const cover = meta.cover ? String(meta.cover).replace(/^\//, "") : "";
   return {
     file,
     slug,
@@ -217,12 +234,41 @@ function parsePost(file, src) {
     title: String(meta.title),
     excerpt: String(meta.excerpt || firstParagraph(body)),
     tags,
-    cover: meta.cover ? String(meta.cover).replace(/^\//, "") : "",
+    cover,
     coverAlt: meta.coverAlt ? String(meta.coverAlt) : "",
+    coverPosition: meta.coverPosition ? String(meta.coverPosition) : "",
+    coverSize: cover && !/^https?:/.test(cover) ? imageSize(cover) : null,
+    accent: accent ? ACCENTS.indexOf(accent) : -1,
+    order,
     draft: meta.draft === true,
     readingTime: Math.max(1, Math.round(words / 220)),
     html: marked.parse(body),
   };
+}
+
+// Width and height of a JPEG or PNG under site/, or null when it can't be read.
+function imageSize(rel) {
+  const file = path.join(SRC, rel.replace(/^\//, "").split("?")[0]);
+  if (!file.startsWith(SRC + path.sep) || !fs.existsSync(file)) return null;
+  const b = fs.readFileSync(file);
+  if (b.length > 24 && b.readUInt32BE(0) === 0x89504e47) return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  if (b[0] !== 0xff || b[1] !== 0xd8) return null;
+  let i = 2;
+  while (i + 9 < b.length) {
+    if (b[i] !== 0xff) { i++; continue; }
+    const marker = b[i + 1];
+    if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) { i += 2; continue; }
+    const len = b.readUInt16BE(i + 2);
+    if (marker >= 0xc0 && marker <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(marker)) return { w: b.readUInt16BE(i + 7), h: b.readUInt16BE(i + 5) };
+    i += 2 + len;
+  }
+  return null;
+}
+
+// A post's accent as the card/page tone variables (falls back to the card's position in the list).
+function tone(post, i) {
+  const n = post.accent >= 0 ? post.accent : i % ACCENTS.length;
+  return `--c: var(--c${n}); --ct: var(--c${n}-t); --con: var(--c${n}-on)`;
 }
 
 function frontMatter(src, where) {
@@ -257,21 +303,38 @@ function firstParagraph(body) {
 }
 
 // Site-relative links in posts ("/assets/x.jpg") become relative to the post page.
+// A paragraph of images becomes photos with captions (an image's title is its caption):
+// one landscape photo runs wide, two or more sit side by side.
 function postHtml(html, root) {
-  return html
+  return photoBlocks(html)
     .replace(/(src|href)="\/(?!\/)/g, `$1="${root}`)
     .replace(/<img /g, '<img loading="lazy" decoding="async" ')
     .replace(/<table>/g, '<div class="table-wrap"><table>')
     .replace(/<\/table>/g, "</table></div>");
 }
 
+function photoBlocks(html) {
+  return html.replace(/<p>((?:\s*<img\b[^>]*>\s*)+)<\/p>/g, (_, imgs) => {
+    const figures = imgs.match(/<img\b[^>]*>/g).map((tag) => {
+      const attr = (name) => (new RegExp(`\\s${name}="([^"]*)"`).exec(tag) || [])[1] || "";
+      const src = attr("src");
+      const size = /^\//.test(src) ? imageSize(src) : null;
+      const img = `<img src="${src}" alt="${attr("alt")}"${size ? ` width="${size.w}" height="${size.h}"` : ""}>`;
+      const caption = attr("title");
+      return { html: `<figure>${img}${caption ? `<figcaption>${caption}</figcaption>` : ""}</figure>`, wide: size && size.w > size.h };
+    });
+    if (figures.length === 1) return figures[0].html.replace("<figure>", `<figure class="photo${figures[0].wide ? " photo--wide" : ""}">`);
+    return `<div class="photos" style="--n: ${figures.length}">${figures.map((f) => f.html).join("")}</div>`;
+  });
+}
+
 function postCard(post, root, i, featured = false) {
-  const tone = `--c: var(--c${i % 6}); --ct: var(--c${i % 6}-t); --con: var(--c${i % 6}-on)`;
+  const pos = post.coverPosition ? ` style="object-position: ${esc(post.coverPosition)}"` : "";
   const media = post.cover
-    ? `<img src="${esc(assetUrl(post.cover, root))}" alt="" loading="lazy">`
+    ? `<img src="${esc(assetUrl(post.cover, root))}" alt="" loading="lazy"${pos}>`
     : `<span class="post-card__mark" aria-hidden="true">${esc(post.title.trim().charAt(0).toUpperCase())}</span>`;
   return `
-        <article class="post-card glow${featured ? " post-card--featured" : ""}" data-tags="${esc(post.tags.map((t) => t.toLowerCase()).join("|"))}" style="${tone}">
+        <article class="post-card glow${featured ? " post-card--featured" : ""}" data-tags="${esc(post.tags.map((t) => t.toLowerCase()).join("|"))}" style="${tone(post, i)}">
           <a class="post-card__link" href="${root}blog/${post.slug}/">
             <div class="post-card__media">${media}</div>
             <div class="post-card__body">

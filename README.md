@@ -48,9 +48,19 @@ Settings at the top of `site/content.js`:
    ---
    ```
 
-   `title` and `date` are required. `excerpt`, `tags` and `cover` are optional.
+   `title` and `date` are required. Everything else is optional:
+   - `excerpt`: the line on the blog cards (otherwise the first paragraph).
+   - `tags`: group posts on the blog page.
+   - `cover`: a portrait photo sits beside the title; a landscape one runs wide below it.
+   - `coverAlt`: what the cover shows, for screen readers.
+   - `coverPosition`: which part of the cover to keep when it's cropped, e.g. `50% 30%` keeps the top third.
+   - `accent`: the post's colour: `red`, `blue`, `yellow`, `green`, `orange` or `teal`.
+   - `order`: for posts with the same date, `1` comes first on the blog page.
+   - `draft`: `true` keeps the post off the live site.
 4. Commit to `main`. With `draft: true` the post only shows on the dev preview, so you can check it there.
 5. To publish, delete the `draft: true` line, commit, then merge `main` into `Prod`.
+
+Photos go in `site/assets/blog/`. In a post, the text in quotes after an image becomes its caption: `![A parrot on my shoulder](/assets/blog/bird.jpg "The moment it landed.")`. Put two or three images on lines next to each other to show them side by side; a landscape photo on its own runs wide.
 
 The example post `site/blog/posts/2026-10-28-how-to-write-a-post.md` shows every formatting option. It's a draft, so it never appears on the live site.
 

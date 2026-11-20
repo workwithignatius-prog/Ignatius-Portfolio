@@ -9,23 +9,25 @@
 <!-- include:nav -->
 
 <main id="main">
-  <article class="post">
-    <header class="post-head">
-      <a class="back-link" href="{{root}}blog/">← All posts</a>
-      {{{draftHtml}}}
-      <ul class="post-tags">{{{tagsHtml}}}</ul>
-      <h1 class="post-title">{{title}}</h1>
-      <p class="post-lead">{{description}}</p>
-      <div class="post-meta">
-        <img class="post-meta__avatar" src="{{root}}assets/me.jpg" alt="" width="48" height="48">
-        <div>
-          <b>{{fullName}}</b>
-          <span class="mono"><time datetime="{{dateISO}}">{{dateLabel}}</time> · {{readingTime}} min read</span>
+  <article class="post" style="{{toneStyle}}">
+    <div class="post-hero {{heroClass}}">
+      <header class="post-head">
+        <a class="back-link" href="{{root}}blog/">← All posts</a>
+        {{{draftHtml}}}
+        <ul class="post-tags">{{{tagsHtml}}}</ul>
+        <h1 class="post-title">{{title}}</h1>
+        <p class="post-lead">{{description}}</p>
+        <div class="post-meta">
+          <img class="post-meta__avatar" src="{{root}}assets/me.jpg" alt="" width="48" height="48">
+          <div>
+            <b>{{fullName}}</b>
+            <span class="mono"><time datetime="{{dateISO}}">{{dateLabel}}</time> · {{readingTime}} min read</span>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
 
-    {{{coverHtml}}}
+      {{{coverHtml}}}
+    </div>
 
     <div class="prose">
 {{{content}}}
