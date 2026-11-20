@@ -9,12 +9,11 @@
 
   const esc = (s = "") =>
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item";
   const pad = (n) => String(n).padStart(2, "0");
-  const tone = (i) => `--c: var(--c${i % 6})`;
+  // The palette colour for item i, its shade for text on paper, and the text colour to put on top of it.
+  const tone = (i) => `--c: var(--c${i % 6}); --ct: var(--c${i % 6}-t); --con: var(--c${i % 6}-on)`;
   const asset = (p) => (/^(https?:)?\/\//.test(p) ? p : root + String(p).replace(/^\//, ""));
   const social = (label) => (data.socials || []).find((s) => s.label.toLowerCase() === label.toLowerCase() && s.url);
-  const chips = (list) => `<ul class="chips">${list.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`;
 
   const storage = {
     get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
@@ -22,16 +21,22 @@
   };
 
   const ICONS = {
-    star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>',
-    spark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.1 7.9L22 12l-7.9 2.1L12 22l-2.1-7.9L2 12l7.9-2.1z"/></svg>',
-    pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 22s7-6.6 7-12.3A7 7 0 0 0 5 9.7C5 15.4 12 22 12 22zm0-9.3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>',
     music: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2.5" y="14" width="5" height="7" rx="2"/><rect x="16.5" y="14" width="5" height="7" rx="2"/></svg>',
     film: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="10" width="18" height="11" rx="2"/><path d="M3 10l2.6-5.5h14.9L19 10"/><path d="M9.5 4.5L7.5 10M15.2 4.5l-2 5.5"/></svg>',
     design: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l5 8-5 10-5-10z"/><circle cx="12" cy="11.5" r="1.6"/><path d="M12 13.1V21"/></svg>',
     content: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="M16 10.5l6-3.5v10l-6-3.5z"/></svg>',
     calisthenics: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v8.5M17 2v8.5"/><circle cx="7" cy="15" r="4.5"/><circle cx="17" cy="15" r="4.5"/></svg>',
     gym: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>',
-    medal: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 1.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zm0 3.2l1.2 2.5 2.7.3-2 1.9.5 2.7L12 10.8l-2.4 1.3.5-2.7-2-1.9 2.7-.3zM8.2 15.3L6.8 22.5 12 20l5.2 2.5-1.4-7.2A8.4 8.4 0 0 1 12 16.5a8.4 8.4 0 0 1-3.8-1.2z"/></svg>',
+  };
+
+  // Little animated cut-outs that follow each passion word in the hero statement.
+  const STICKERS = {
+    music: '<svg viewBox="0 0 24 24"><g class="st-nod"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2.5" y="14" width="5" height="7" rx="2"/><rect x="16.5" y="14" width="5" height="7" rx="2"/></g></svg>',
+    film: '<svg viewBox="0 0 24 24"><rect x="3" y="10" width="18" height="11" rx="2"/><path d="M8 13.5l2 3M13 13.5l2 3"/><g class="st-clap"><path d="M3.2 9.4l16.6-4.6 1 3.4-16.6 4.6z"/></g></svg>',
+    design: '<svg viewBox="0 0 24 24"><path class="st-line" d="M2.5 20.5c2.5-2.5 4.5 1 7-1.5s4.5 1 7-1.5"/><g class="st-pen"><path d="M13.5 3.5l6 6-7.5 7.5-3.8 1.3 1.3-3.8z"/><path d="M11.5 12.5l2 2"/></g></svg>',
+    content: '<svg viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="M16 10.5l6-3.5v10l-6-3.5z"/><circle class="st-rec" cx="6.2" cy="10.2" r="1.7"/></svg>',
+    calisthenics: '<svg viewBox="0 0 24 24"><g class="st-swing"><path d="M7 1v8.5M17 1v8.5"/><circle cx="7" cy="14" r="4.5"/><circle cx="17" cy="14" r="4.5"/></g></svg>',
+    gym: '<svg viewBox="0 0 24 24"><g class="st-lift"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></g></svg>',
   };
 
   /* Adds the photo to a frame; keeps the monogram if the file is missing. */
@@ -50,6 +55,7 @@
   /* ---------- Shared on every page ---------- */
   function renderCommon() {
     $$("[data-calendly]").forEach((a) => {
+      if (a.dataset.cursor) a.dataset.cursor = data.calendlyUrl ? "Book a call" : "Say hi";
       if (!data.calendlyUrl) return;
       a.href = data.calendlyUrl;
       a.target = "_blank";
@@ -72,6 +78,9 @@
         .join("");
     });
     $$("[data-location]").forEach((el) => (el.textContent = data.location));
+    $$("[data-city]").forEach((el) => (el.textContent = data.city || data.location));
+    $$("[data-region]").forEach((el) => (el.textContent = data.region || ""));
+    stamps();
     $$("[data-tz]").forEach((el) => (el.textContent = data.timezoneLabel || ""));
     $$("[data-availability]").forEach((el) => (el.hidden = !data.available));
     $$("[data-availability-text]").forEach((el) => (el.textContent = data.availability));
@@ -82,21 +91,28 @@
     });
     const topic = $("#fTopic");
     if (topic) topic.innerHTML = data.contactTopics.map((o) => `<option>${esc(o)}</option>`).join("");
-    const resume = $("#resumeBtn");
-    if (resume && data.resumeUrl) Object.assign(resume, { href: asset(data.resumeUrl), hidden: false });
   }
 
-  function numbers(el) {
-    if (!el) return;
-    el.innerHTML = data.stats
-      .map(
-        (n, i) => `
-        <li class="reveal" style="${tone(i)}">
-          <strong data-count="${Number(n.value) || 0}" data-prefix="${esc(n.prefix || "")}" data-suffix="${esc(n.suffix || "")}">${esc(n.prefix || "")}0${esc(n.suffix || "")}</strong>
-          <span>${esc(n.label)}</span>
-        </li>`
-      )
-      .join("");
+  /* A postage stamp of Chennai, with a postmark that shows the local time. */
+  function stamps() {
+    const ring = [data.city, data.region].filter(Boolean).join(" · ").toUpperCase();
+    $$("[data-stamp]").forEach((el, i) => {
+      el.setAttribute("role", "img");
+      el.setAttribute("aria-label", `Postage stamp: ${[data.city, data.region].filter(Boolean).join(", ")}`);
+      el.innerHTML = `
+        <span class="stamp__paper">
+          <img class="stamp__art" src="${asset("assets/chennai.svg")}" alt="" width="120" height="150">
+          <span class="stamp__value mono">₹5</span>
+          <span class="stamp__name">${esc(data.city || data.location)}</span>
+        </span>
+        <svg class="postmark" viewBox="0 0 170 84" aria-hidden="true">
+          <defs><path id="postmark${i}" d="M10.5 42a31.5 31.5 0 1 1 63 0a31.5 31.5 0 1 1 -63 0"/></defs>
+          <circle cx="42" cy="42" r="38"/><circle cx="42" cy="42" r="25"/>
+          <text class="postmark__ring"><textPath href="#postmark${i}" textLength="194" lengthAdjust="spacing">${esc(ring)} ·</textPath></text>
+          <text class="postmark__time" x="42" y="45.5" text-anchor="middle" data-clock>--:--</text>
+          <path class="postmark__waves" d="M86 26q7-6 14 0t14 0t14 0t14 0t14 0M86 42q7-6 14 0t14 0t14 0t14 0t14 0M86 58q7-6 14 0t14 0t14 0t14 0t14 0"/>
+        </svg>`;
+    });
   }
 
   /* "The B-sides": album sleeves with generated cover art and a record that slides out. */
@@ -120,7 +136,7 @@
           ? `<a class="album__sleeve" href="${esc(p.link)}" target="_blank" rel="noopener" data-cursor="Open">${inner}</a>`
           : `<button class="album__sleeve" type="button" aria-pressed="false" aria-label="Spin the ${esc(p.title)} record" data-cursor="Play">${inner}</button>`;
         return `
-        <article class="album reveal" style="--c: var(--c${i % 6}); --c-pair: var(--c${(i + 2) % 6})">
+        <article class="album reveal" style="${tone(i)}">
           ${sleeve}
           <h3 class="album__title">${esc(p.title)}</h3>
           <p class="album__tag">${esc(p.tagline)}</p>
@@ -137,25 +153,42 @@
     });
   }
 
-  function logoMark(x, cls) {
-    return x.logo
-      ? `<span class="${cls} ${cls}--logo"><img src="${esc(asset(x.logo))}" alt="${esc(x.company)} logo"></span>`
-      : `<span class="${cls}" aria-hidden="true">${esc(x.company.replace(/[^A-Za-z]/g, "").slice(0, 2).replace(/^./, (c) => c.toUpperCase()))}</span>`;
-  }
-
-  function awards(el) {
-    if (!el) return;
-    el.innerHTML = data.achievements
+  /* Liner notes: a line or two on each B-side, with its link when there is one. */
+  function notes(el) {
+    if (!el || !data.passions) return;
+    const verb = { music: "Listen", film: "Watch", content: "Follow" };
+    el.innerHTML = data.passions
       .map(
-        (a, i) => `
-        <article class="award glow reveal" style="${tone(i)}">
-          <span class="award__icon">${ICONS.star}</span>
-          <h3 class="award__title">${esc(a.title)}</h3>
-          <p class="award__org mono">${esc(a.org)}</p>
-          <p class="award__text">${esc(a.text)}</p>
-        </article>`
+        (p, i) => `
+        <li class="note reveal" style="${tone(i)}">
+          <span class="note__num">${pad(i + 1)}</span>
+          <h3 class="note__title">${esc(p.title)}<span class="note__tag">${esc(p.tagline)}</span></h3>
+          <div class="note__body">
+            <p class="note__story">${esc(p.story || p.tagline)}</p>
+            ${p.link ? `<a class="note__link" href="${esc(p.link)}" target="_blank" rel="noopener">${verb[p.art] || "See it"} <span aria-hidden="true">↗</span></a>` : ""}
+          </div>
+        </li>`
       )
       .join("");
+  }
+
+  /* The hero's big line: each passion's word is underlined in its colour and links to its record. */
+  function statement(el) {
+    if (!el || !data.headline) return;
+    const words = new Map();
+    (data.passions || []).forEach((p, i) => {
+      if (p.word && !words.has(p.word.toLowerCase())) words.set(p.word.toLowerCase(), i);
+    });
+    const used = new Set();
+    const pattern = [...words.keys()].map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+    el.innerHTML = !pattern ? esc(data.headline) : esc(data.headline).replace(new RegExp(`\\b(${pattern})\\b`, "gi"), (w) => {
+      const i = words.get(w.toLowerCase());
+      if (used.has(i)) return w;
+      used.add(i);
+      const art = data.passions[i].art;
+      const sticker = STICKERS[art] ? `<span class="sticker sticker--${art}" aria-hidden="true">${STICKERS[art]}</span>` : "";
+      return `<a class="hero__word" href="#b-sides" data-album="${i}" data-cursor="Play" style="${tone(i)}">${w}${sticker}</a>`;
+    });
   }
 
   /* ---------- Home ---------- */
@@ -164,57 +197,48 @@
     if (!nameEl) return;
     $("#heroGreet").textContent = data.greeting;
     $("#heroNameText").textContent = `${data.name}!`;
-    nameEl.innerHTML = [...`${data.name}!`].map((c) => `<span class="ch"><span>${esc(c)}</span></span>`).join("");
-    $("#heroBadge").textContent = data.heroBadge || data.role;
-    $("#heroRole").textContent = data.role;
-    $("#heroTagline").textContent = data.tagline;
-    $("#heroNow").innerHTML = `Currently <b>${esc(data.current.role)}</b> at <b>${esc(data.current.company)}</b>`;
-    $("#heroCompanies").innerHTML = data.experience.map((x) => `<li>${esc(x.company)}</li>`).join("");
-    $("#orbit").innerHTML = (data.passions || [])
-      .map((p, i) => `<li class="orbit__item" style="${tone(i)}"><span class="orbit__icon">${ICONS[p.art] || ICONS.music}</span><span class="orbit__label">${esc(p.title)}</span></li>`)
+    nameEl.innerHTML = [...`${data.name}!`]
+      .map((c, i) => `<span class="ch" style="--hc: var(--c${i % 6}); --n: ${i}"><span>${esc(c)}</span></span>`)
+      .join("");
+    $("#heroBadge").textContent = data.heroBadge || `a.k.a. ${data.handle}`;
+    statement($("#heroStatement"));
+    $("#heroDay").textContent = `By day, I'm a ${data.role}.`;
+    $("#heroSocials").innerHTML = (data.socials || [])
+      .filter((s) => s.url)
+      .map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)} <span aria-hidden="true">↗</span></a></li>`)
+      .join("");
+    // Passions as chat messages, alternating either side of the portrait from top to bottom.
+    const passions = data.passions || [];
+    $("#chat").innerHTML = passions
+      .map((p, i) => {
+        const top = passions.length > 1 ? 4 + (i * 84) / (passions.length - 1) : 40;
+        return `
+        <li class="chat__msg" style="${tone(i)}; --i: ${i}; --top: ${top.toFixed(1)}%">
+          <a class="chat__bubble" href="#b-sides" data-album="${i}" data-cursor="Play">
+            <span class="chat__typing" aria-hidden="true"><span><i></i><i></i><i></i></span></span>
+            <span class="chat__body"><span>${ICONS[p.art] || ICONS.music}${esc(p.title)}</span></span>
+          </a>
+        </li>`;
+      })
       .join("");
     mountPhoto($(".portrait__frame"));
-    numbers($("#xpNumbers"));
     albums($("#albums"));
+    notes($("#notes"));
 
     const items = data.marquee.map((m) => `<span>${esc(m)} <i>✦</i></span>`).join("");
     $("#marquee").innerHTML = items + items;
-    $("#statement").innerHTML = data.statement.split(/\s+/).map((w) => `<span class="w">${esc(w)}</span>`).join(" ");
-
-    $("#xpRows").innerHTML = data.experience
-      .map(
-        (x, i) => `
-        <li class="work reveal" style="${tone(i)}">
-          <button class="work__row" type="button" data-xp="${i}">
-            <span class="work__num">${pad(i + 1)}</span>
-            <span class="work__title">${esc(x.company)}<span class="work__summary">${esc(x.role)}</span></span>
-            <span class="work__cat">${esc(x.tags[0] || "")}</span>
-            <span class="work__year">${esc(x.period)}</span>
-            <span class="work__arrow" aria-hidden="true">→</span>
-          </button>
-        </li>`
-      )
-      .join("");
-    awards($("#awards"));
-
-    $("#servicesList").innerHTML = data.services
-      .map(
-        (s, i) => `
-        <article class="service reveal" style="${tone(i)}">
-          <span class="service__num mono">${pad(i + 1)}</span>
-          <h3>${esc(s.title)}</h3>
-          <p>${esc(s.detail)}</p>
-          ${chips(s.tags)}
-        </article>`
-      )
-      .join("");
-
-    $("#processList").innerHTML = data.process
-      .map((p, i) => `<li class="reveal" style="${tone(i)}"><h3>${esc(p.step)}</h3><p>${esc(p.detail)}</p></li>`)
-      .join("");
+    // Words wrapped in *stars* are coloured.
+    let key = false;
+    $("#statement").innerHTML = data.statement.split(/\s+/).map((w) => {
+      if (w.startsWith("*")) { key = true; w = w.slice(1); }
+      const ends = /\*\W*$/.test(w);
+      const html = `<span class="w${key ? " w--key" : ""}">${esc(w.replace(/\*(?=\W*$)/, ""))}</span>`;
+      if (ends) key = false;
+      return html;
+    }).join(" ");
   }
 
-  /* Fit "Ignatius!" to the full width, then line up the gradient across the letters. */
+  /* Fit "Ignatius!" to the full width. */
   function fitName() {
     const el = $("#heroName");
     if (!el) return;
@@ -224,75 +248,57 @@
     el.style.width = "";
     const box = el.parentElement.getBoundingClientRect().width;
     el.style.fontSize = `${Math.floor((100 * box * 0.995) / natural)}px`;
-    const { left, width } = el.getBoundingClientRect();
-    $$(".ch", el).forEach((ch) => {
-      const inner = ch.firstElementChild;
-      inner.style.setProperty("--w", `${width}px`);
-      inner.style.setProperty("--x", `${left - ch.getBoundingClientRect().left}px`);
-    });
   }
 
-  function initModal() {
-    const modal = $("#modal");
-    const rows = $("#xpRows");
-    if (!modal || !rows) return;
-    rows.addEventListener("click", (e) => {
-      const row = e.target.closest("[data-xp]");
-      if (!row) return;
-      const x = data.experience[row.dataset.xp];
-      $("#modalFile").textContent = `${slug(x.company)}.experience`;
-      $("#modalBody").innerHTML = `
-        <p class="label">${esc(x.period)}</p>
-        <h3 id="modalTitle">${esc(x.company)}</h3>
-        <p class="modal__role">${esc(x.role)}</p>
-        <div class="modal__facts">
-          <span>Period<b>${esc(x.period)}</b></span>
-          <span>Location<b>${esc(x.location)}</b></span>
-          ${x.award ? `<span>Highlight<b>${esc(x.award)}</b></span>` : ""}
-        </div>
-        <p class="modal__summary">${esc(x.summary)}</p>
-        <h4>What I did</h4>
-        <ul class="checklist">${x.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
-        ${chips(x.tags)}
-        <a class="btn btn--primary" href="${root}experience.html#xp-${slug(x.company)}">Open on the experience page <span aria-hidden="true">→</span></a>`;
-      $("#preview")?.classList.remove("is-visible");
-      document.documentElement.classList.add("cursor-off");
-      modal.showModal();
-    });
-    modal.addEventListener("close", () => document.documentElement.classList.remove("cursor-off"));
-    $("#modalClose").addEventListener("click", () => modal.close());
-    modal.addEventListener("click", (e) => { if (e.target === modal) modal.close(); });
+  /* The a.k.a. bubble floats above the last two characters of the name (the S and the !). */
+  function placeBadge() {
+    const badge = $("#heroBadge");
+    const chars = $$("#heroName .ch");
+    if (!badge || chars.length < 2) return;
+    badge.style.left = badge.style.right = badge.style.top = "";
+    if (matchMedia("(max-width: 900px)").matches) return;
+    const box = badge.offsetParent.getBoundingClientRect();
+    const s = chars[chars.length - 2].getBoundingClientRect();
+    const bang = chars[chars.length - 1].getBoundingClientRect();
+    const left = (s.left + bang.right) / 2 - box.left - badge.offsetWidth / 2;
+    badge.style.left = `${Math.round(Math.min(left, box.width - badge.offsetWidth))}px`;
+    badge.style.right = "auto";
+    // Just clear of the tops of the letters.
+    badge.style.top = `${Math.round(Math.max(-8, s.top - box.top - badge.offsetHeight - 12))}px`;
   }
 
-  /* ---------- Experience page ---------- */
-  function renderExperiencePage() {
-    const list = $("#xpTimeline");
-    if (!list) return;
-    numbers($("#xpNumbers"));
-    list.innerHTML = data.experience
-      .map((x, i) => {
-        return `
-        <li class="xp__item glow reveal" id="xp-${slug(x.company)}" style="${tone(i)}">
-          <div class="xp__side">
-            ${logoMark(x, "xp__mark")}
-            <p class="xp__period mono">${esc(x.period)}</p>
-            <p class="xp__company">${esc(x.company)}</p>
-            <p class="xp__location">${esc(x.location)}</p>
-          </div>
-          <div class="xp__main">
-            <h2 class="xp__role">${esc(x.role)}</h2>
-            <p class="xp__summary">${esc(x.summary)}</p>
-            <ul class="checklist">${x.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
-            <div class="xp__foot">
-              ${chips(x.tags)}
-              ${x.award ? `<p class="xp__award"><span class="xp__award-icon">${ICONS.star}</span>${esc(x.award)}</p>` : ""}
-            </div>
-          </div>
-        </li>`;
-      })
-      .join("");
-    awards($("#awards"));
-    if (location.hash) requestAnimationFrame(() => document.getElementById(location.hash.slice(1))?.scrollIntoView());
+  /* Two-column hero: tuck the portrait just under the name, centred on the gap between its last two
+     letters (the U and the S), and small enough to fit on the first screen. Stacked layouts keep it centred. */
+  function placePhoto() {
+    const photo = $(".hero__photo");
+    const chars = $$("#heroName .ch");
+    if (!photo || chars.length < 3) return;
+    const visual = photo.parentElement;
+    visual.style.marginTop = photo.style.width = photo.style.translate = "";
+    if (matchMedia("(max-width: 900px)").matches) return;
+
+    const nameBottom = $("#heroName").getBoundingClientRect().bottom + scrollY;
+    const top = nameBottom + 22;
+    const natural = photo.getBoundingClientRect();
+    const fit = (innerHeight - top - 24) * (natural.width / natural.height);
+    if (fit < natural.width) photo.style.width = `${Math.max(260, fit)}px`;
+    const box = photo.getBoundingClientRect();
+    visual.style.marginTop = `${top - (box.top + scrollY)}px`;
+
+    // How far the bubbles on each side reach past the photo once their text is showing.
+    const chat = $("#chat");
+    const overlap = (parseFloat(getComputedStyle(chat).getPropertyValue("--overlap")) || 0) / 100;
+    const reach = (side) => Math.max(0, ...$$(`.chat__msg:nth-child(${side})`, chat).map((m) => {
+      const cs = getComputedStyle($(".chat__bubble", m));
+      return $(".chat__body > span", m).scrollWidth + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) - overlap * box.width;
+    }));
+    const a = chars[chars.length - 3].getBoundingClientRect();
+    const b = chars[chars.length - 2].getBoundingClientRect();
+    const want = (a.right + b.left) / 2 - (box.left + box.width / 2);
+    const room = 24; // edge margin, including the bubbles' 9px parallax drift
+    const most = document.documentElement.clientWidth - room - (box.right + reach("even"));
+    const least = $(".hero__intro").getBoundingClientRect().right + room - (box.left - reach("odd"));
+    photo.style.translate = `${Math.round(Math.max(least, Math.min(want, most)))}px 0`;
   }
 
   /* ---------- About page ---------- */
@@ -305,21 +311,7 @@
     $("#facts").innerHTML = data.about.facts
       .map((f, i) => `<li class="fact glow reveal" style="${tone(i)}"><span class="mono">${esc(f.label)}</span><b>${esc(f.value)}</b></li>`)
       .join("");
-    $("#toolboxGrid").innerHTML = data.toolbox
-      .map((g, i) => `<article class="tool-group glow reveal" style="${tone(i)}"><h3 class="tool-group__title mono">${esc(g.group)}</h3>${chips(g.items)}</article>`)
-      .join("");
     albums($("#albums"));
-    $("#competencyCloud").innerHTML = data.competencies.map((c, i) => `<li style="${tone(i)}">${esc(c)}</li>`).join("");
-    $("#certs").innerHTML = data.certifications
-      .map(
-        (c, i) => `
-        <li class="cert glow reveal" style="${tone(i)}">
-          <span class="cert__icon">${ICONS.medal}</span>
-          <p class="cert__name">${esc(c.name)}</p>
-          <p class="cert__issuer mono">${esc(c.issuer)}</p>
-        </li>`
-      )
-      .join("");
   }
 
   /* ---------- Blog ---------- */
@@ -374,7 +366,17 @@
     } catch {
       fmt = new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit" });
     }
-    const tick = () => clocks.forEach((el) => (el.textContent = fmt.format(new Date())));
+    const tick = () => {
+      const now = new Date();
+      const text = fmt.format(now);
+      clocks.forEach((el) => {
+        if (el.dataset.clock !== "split") { el.textContent = text; return; }
+        const parts = fmt.formatToParts(now);
+        const period = parts.find((p) => p.type === "dayPeriod");
+        const time = parts.filter((p) => p.type !== "dayPeriod").map((p) => p.value).join("").trim();
+        el.innerHTML = period ? `${esc(time)}<small>${esc(period.value)}</small>` : esc(time);
+      });
+    };
     tick();
     setInterval(tick, 15000);
   }
@@ -429,27 +431,45 @@
       const entry = Object.fromEntries(new FormData(form));
       delete entry._gotcha;
 
-      if (!data.formEndpoint) {
-        const body = `Name: ${entry.name}\nEmail: ${entry.email}\nCompany: ${entry.company || "-"}\nAbout: ${entry.topic}\n\n${entry.message}`;
+      if (!data.formAccessKey) {
+        const body = `Name: ${entry.name}\nEmail: ${entry.email}\nLink: ${entry.link || "-"}\nAbout: ${entry.topic}\n\n${entry.message}`;
         location.href = `mailto:${data.email}?subject=${encodeURIComponent(`${entry.topic} — ${entry.name}`)}&body=${encodeURIComponent(body)}`;
         say(`Your email app should open with the message ready to send. If it doesn't, write to ${data.email}.`);
         return;
       }
 
+      // Web3Forms emails the message to the inbox the access key was created with.
+      const mail = {
+        access_key: data.formAccessKey,
+        subject: `New message from ${entry.name.trim()}: ${entry.topic}`,
+        from_name: `${data.handle} website`,
+        name: entry.name.trim(),
+        email: entry.email.trim(),
+      };
+      if (entry.link.trim()) mail["Website or social"] = entry.link.trim();
+      mail["Reaching out about"] = entry.topic;
+      mail.message = entry.message.trim();
+
       submit.disabled = true;
       say("Sending…");
+      const stop = new AbortController();
+      const timer = setTimeout(() => stop.abort(), 15000);
       try {
-        const res = await fetch(data.formEndpoint, {
+        const res = await fetch("https://api.web3forms.com/submit", {
           method: "POST",
           headers: { Accept: "application/json", "Content-Type": "application/json" },
-          body: JSON.stringify(entry),
+          body: JSON.stringify(mail),
+          signal: stop.signal,
         });
-        if (!res.ok) throw new Error(String(res.status));
+        const reply = await res.json().catch(() => ({}));
+        if (!res.ok || !reply.success) throw new Error(reply.message || `HTTP ${res.status}`);
         form.reset();
-        say("Thanks! Your message is on its way. I'll reply within two working days.", "ok");
+        say(`Sent! Thanks, ${mail.name.split(/\s+/)[0]}. I'll reply to ${mail.email} soon.`, "ok");
+        toast("✓ Message sent");
       } catch {
         say(`Your message couldn't be sent. Please try again, or email ${data.email}.`, "error");
       } finally {
+        clearTimeout(timer);
         submit.disabled = false;
       }
     });
@@ -474,20 +494,6 @@
     tick();
   }
 
-  function countUp(el) {
-    const target = Number(el.dataset.count);
-    const { prefix = "", suffix = "" } = el.dataset;
-    if (reduceMotion || !target) { el.textContent = prefix + target + suffix; return; }
-    const start = performance.now();
-    const dur = 1400;
-    const step = (t) => {
-      const k = Math.min(1, (t - start) / dur);
-      el.textContent = prefix + Math.round(target * (1 - Math.pow(1 - k, 3))) + suffix;
-      if (k < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }
-
   function initReveal() {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((en) => {
@@ -495,16 +501,14 @@
         const el = en.target;
         el.classList.add("is-in");
         if (el.matches("[data-scramble]")) scramble(el);
-        $$("[data-count]", el).forEach(countUp);
         io.unobserve(el);
       });
     }, { threshold: 0.12 });
     $$(".reveal").forEach((el) => {
       const siblings = [...el.parentElement.children].filter((c) => c.classList.contains("reveal"));
-      el.style.transitionDelay = `${Math.min(siblings.indexOf(el), 5) * 80}ms`;
+      el.style.setProperty("--rd", `${Math.min(siblings.indexOf(el), 5) * 80}ms`);
       io.observe(el);
     });
-    $$("[data-count]").filter((el) => !el.closest(".reveal")).forEach(countUp);
   }
 
   function initStatement() {
@@ -521,27 +525,11 @@
     update();
   }
 
-  /* ---------- Hover effects: spotlight, glowing borders, tilt, parallax, magnetic, preview ---------- */
+  /* ---------- Hover effects: tilt, parallax, magnetic buttons ---------- */
   function initPointerFx() {
     if (!finePointer || reduceMotion) return;
 
-    // A soft light that follows the pointer across the page.
-    const spot = $("#spotlight");
-    let x = innerWidth / 2, y = innerHeight / 3, sx = x, sy = y;
-    addEventListener("pointermove", (e) => {
-      x = e.clientX;
-      y = e.clientY;
-      spot?.classList.add("is-on");
-      // Borders and dark panels light up where the pointer is.
-      for (let el = e.target.closest?.(".glow, [data-glow]"); el; el = el.parentElement?.closest(".glow, [data-glow]")) {
-        const r = el.getBoundingClientRect();
-        el.style.setProperty("--mx", `${e.clientX - r.left}px`);
-        el.style.setProperty("--my", `${e.clientY - r.top}px`);
-      }
-    }, { passive: true });
-    document.documentElement.addEventListener("pointerleave", () => spot?.classList.remove("is-on"));
-
-    // Cards and the portrait lean towards the pointer.
+    // The portrait leans towards the pointer.
     $$(".tilt").forEach((el) => {
       const max = Number(el.dataset.tilt || 6);
       el.addEventListener("pointermove", (e) => {
@@ -557,7 +545,7 @@
       });
     });
 
-    // Hero badges drift with the pointer at different depths.
+    // The hero chat bubbles drift against the pointer.
     const hero = $("[data-hero]");
     hero?.addEventListener("pointermove", (e) => {
       const r = hero.getBoundingClientRect();
@@ -572,190 +560,210 @@
       });
       btn.addEventListener("pointerleave", () => (btn.style.transform = ""));
     });
-
-    // Experience rows: a card follows the pointer.
-    const preview = $("#preview");
-    const rows = $("#xpRows");
-    let px = x, py = y;
-    if (preview && rows) {
-      rows.addEventListener("pointerover", (e) => {
-        const row = e.target.closest("[data-xp]");
-        if (!row) return;
-        const i = Number(row.dataset.xp);
-        const xp = data.experience[i];
-        if (preview.dataset.xp === String(i) && preview.classList.contains("is-visible")) return;
-        preview.dataset.xp = String(i);
-        preview.style.setProperty("--c", `var(--c${i % 6})`);
-        preview.innerHTML = `
-          <span class="preview__logo">${xp.logo ? `<img src="${esc(asset(xp.logo))}" alt="">` : `<span class="preview__word">${esc(xp.company)}</span>`}</span>
-          <span class="preview__meta"><b>${esc(xp.company)}</b><span class="mono">${esc(xp.period)}</span></span>`;
-        preview.classList.remove("is-visible");
-        void preview.offsetWidth; // restart the pop-in for each company
-        preview.classList.add("is-visible");
-      });
-      rows.addEventListener("pointerleave", () => { preview.classList.remove("is-visible"); delete preview.dataset.xp; });
-    }
-
-    (function loop() {
-      sx += (x - sx) * 0.12;
-      sy += (y - sy) * 0.12;
-      px += (x - px) * 0.14;
-      py += (y - py) * 0.14;
-      if (spot) spot.style.transform = `translate(${sx}px, ${sy}px)`;
-      if (preview) preview.style.transform = `translate(${px + 72}px, ${py - 110}px) rotate(${(x - px) * 0.05}deg)`;
-      requestAnimationFrame(loop);
-    })();
   }
 
-  /* ---------- Custom cursor: an inverting dot and ring, a colour trail, labels on hover ---------- */
+  /* ---------- Custom cursor: a chat-bubble pin that swings as it moves and says what a click does ---------- */
   function initCursor() {
     const cursor = $("#cursor");
     if (!cursor) return;
     if (!finePointer || reduceMotion) return cursor.remove();
     document.documentElement.classList.add("has-cursor");
-    const ring = $(".cursor__ring", cursor);
-    const dot = $(".cursor__dot", cursor);
+    const bubble = $(".cursor__bubble", cursor);
     const label = $(".cursor__label", cursor);
-    const trailBox = $(".cursor__trail", cursor);
-    const stops = [[108, 71, 255], [180, 60, 255], [255, 62, 138], [255, 176, 32]];
-    const mix = (t) => {
-      const k = t * (stops.length - 1), i = Math.min(stops.length - 2, Math.floor(k)), f = k - i;
-      return `rgb(${stops[i].map((c, j) => Math.round(c + (stops[i + 1][j] - c) * f)).join(",")})`;
-    };
-    const N = 12;
-    trailBox.innerHTML = Array.from({ length: N }, (_, i) => `<i style="background:${mix(i / (N - 1))}"></i>`).join("");
-    const trail = [...trailBox.children].map((el) => ({ el, x: -100, y: -100 }));
-    let x = -100, y = -100, rx = x, ry = y, lastX = x, lastY = y, speed = 0, seen = false;
+    let x = -100, y = -100, lastX = x, lastY = y, vx = 0, vy = 0, seen = false;
+    let angle = 0, spin = 0, scale = 1, grow = 0, down = false, mode = "";
+    // Label widths are measured on the mono font; measure again once it has loaded.
+    document.fonts?.ready.then(() => (label.textContent = ""));
 
     const react = (t) => {
       if (!t || !t.closest) return;
       cursor.classList.toggle("is-hidden", !!t.closest("input, textarea, select"));
-      const labelled = t.closest("[data-cursor], .work__row");
+      cursor.classList.toggle("is-dark", !!t.closest("[data-dark]"));
+      const labelled = t.closest("[data-cursor]");
       const text = labelled ? labelled.dataset.cursor || "View" : "";
-      if (text) label.textContent = text;
-      cursor.classList.toggle("is-label", !!text);
-      cursor.classList.toggle("is-link", !text && !!t.closest("a, button, summary, label, [role='button']"));
+      if (text && text !== label.textContent) {
+        label.textContent = text;
+        cursor.style.setProperty("--lw", `${label.offsetWidth + 30}px`);
+      }
+      mode = text ? "label" : t.closest("a, button, summary, label, [role='button']") ? "link" : "";
+      cursor.classList.toggle("is-label", mode === "label");
+      cursor.classList.toggle("is-link", mode === "link");
     };
     addEventListener("pointermove", (e) => {
       x = e.clientX;
       y = e.clientY;
       if (!seen) {
         seen = true;
-        rx = x; ry = y;
-        trail.forEach((t) => { t.x = x; t.y = y; });
+        lastX = x;
+        lastY = y;
       }
       cursor.classList.add("is-visible");
       react(e.target);
     }, { passive: true });
     addEventListener("scroll", () => { if (seen) react(document.elementFromPoint(x, y)); }, { passive: true });
     document.documentElement.addEventListener("pointerleave", () => cursor.classList.remove("is-visible"));
-    addEventListener("pointerdown", () => cursor.classList.add("is-down"));
+    addEventListener("pointerdown", () => (down = true));
     addEventListener("pointerup", () => {
-      cursor.classList.remove("is-down", "is-click");
-      void cursor.offsetWidth;
+      down = false;
+      cursor.classList.remove("is-click");
+      void cursor.offsetWidth; // restart the burst
       cursor.classList.add("is-click");
     });
 
     (function loop() {
-      rx += (x - rx) * 0.22;
-      ry += (y - ry) * 0.22;
-      dot.style.transform = `translate(${x}px, ${y}px)`;
-      ring.style.transform = `translate(${rx}px, ${ry}px)`;
-      let px = x, py = y;
-      trail.forEach((t, i) => {
-        t.x += (px - t.x) * 0.42;
-        t.y += (py - t.y) * 0.42;
-        t.el.style.transform = `translate(${t.x}px, ${t.y}px) scale(${1 - i / N})`;
-        px = t.x;
-        py = t.y;
-      });
-      speed += (Math.hypot(x - lastX, y - lastY) - speed) * 0.2;
+      // The tip sits exactly on the pointer; the bubble hangs from it and swings on a spring.
+      vx += (x - lastX - vx) * 0.3;
+      vy += (y - lastY - vy) * 0.3;
       lastX = x;
       lastY = y;
-      cursor.style.setProperty("--trail", Math.min(1, speed / 10).toFixed(2));
+      const target = mode === "label" ? 0 : Math.max(-38, Math.min(38, (vx - vy) * 1.7));
+      spin = (spin + (target - angle) * 0.14) * 0.78;
+      angle += spin;
+      const size = (mode === "link" ? 1.4 : 1) * (down ? 0.8 : 1);
+      grow = (grow + (size - scale) * 0.22) * 0.68;
+      scale += grow;
+      cursor.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      bubble.style.transform = `rotate(${angle.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
       requestAnimationFrame(loop);
     })();
   }
 
-  /* ---------- Hero: passions orbit the portrait in 3D, passing behind it ---------- */
-  function initOrbit() {
-    const orbit = $("#orbit");
-    const visual = $("#heroVisual");
-    const frame = $(".portrait__frame");
-    if (!orbit || !visual || !frame) return;
-    const items = $$(".orbit__item", orbit);
-    if (!items.length) return;
-    let angle = -Math.PI / 2;
-    let paused = false;
-    let geo = null;
-    visual.addEventListener("pointerenter", () => (paused = true));
-    visual.addEventListener("pointerleave", () => (paused = false));
-
-    const measure = () => {
-      const v = visual.getBoundingClientRect();
-      const f = frame.getBoundingClientRect();
-      const cx = f.left - v.left + f.width / 2;
-      const room = () => Math.min(cx, v.width - cx) - Math.max(...items.map((it) => it.offsetWidth)) / 2 - 4;
-      orbit.classList.remove("orbit--compact");
-      if (room() < f.width * 0.5) orbit.classList.add("orbit--compact");
-      geo = { cx, cy: f.top - v.top + f.height * 0.62, rx: Math.max(70, Math.min(f.width * 0.74, room())), ry: f.height * 0.16 };
+  /* ---------- Hero: passions arrive as chat messages, typing dots first ---------- */
+  function initChat() {
+    const chat = $("#chat");
+    if (!chat) return () => {};
+    const msgs = $$(".chat__msg", chat);
+    const words = $$(".hero__word");
+    // Pointing at a passion, as a word in the statement or as a bubble, nudges its bubble,
+    // lights up its word and jumps the portrait film to its scene.
+    const mark = (i) => {
+      msgs.forEach((m, j) => m.classList.toggle("is-hinted", j === i));
+      words.forEach((w) => w.classList.toggle("is-on", Number(w.dataset.album) === i));
     };
-    const place = () => {
-      items.forEach((it, i) => {
-        const a = angle + (i / items.length) * Math.PI * 2;
-        const depth = (Math.sin(a) + 1) / 2; // 0 = behind the photo, 1 = in front
-        it.style.transform = `translate(${geo.cx + Math.cos(a) * geo.rx}px, ${geo.cy + Math.sin(a) * geo.ry}px) translate(-50%, -50%) scale(${(0.72 + depth * 0.32).toFixed(3)})`;
-        it.style.zIndex = depth > 0.5 ? 4 : 1;
-        it.style.opacity = (0.4 + depth * 0.6).toFixed(2);
+    const clips = initFilm(mark);
+    let touched = false;
+    // Only a passion itself takes over from the tour; passing over the rest of the text doesn't.
+    const pick = (e) => {
+      const link = e.target.closest("[data-album]");
+      if (link) { touched = true; clips.stop(); }
+      if (link || !clips.touring) clips.show(link ? Number(link.dataset.album) : -1);
+    };
+    [$("#heroStatement"), chat].forEach((el) => {
+      if (!el) return;
+      el.addEventListener("pointerover", pick);
+      el.addEventListener("pointerleave", () => { if (!clips.touring) clips.show(-1); });
+      el.addEventListener("focusin", pick);
+      el.addEventListener("focusout", (e) => { if (!clips.touring && !e.relatedTarget?.closest?.("[data-album]")) clips.show(-1); });
+    });
+    // A bubble or a passion word jumps to its record in the B-sides and puts it on.
+    $("[data-hero]").addEventListener("click", (e) => {
+      const link = e.target.closest("[data-album]");
+      const sleeve = link && $$("#albums .album__sleeve")[Number(link.dataset.album)];
+      if (sleeve && sleeve.matches("button") && sleeve.getAttribute("aria-pressed") !== "true") setTimeout(() => sleeve.click(), 700);
+    });
+    return () => {
+      if (reduceMotion) return msgs.forEach((m) => m.classList.add("is-sent"));
+      msgs.forEach((m, i) => {
+        setTimeout(() => m.classList.add("is-typing"), 300 + i * 550);
+        setTimeout(() => m.classList.add("is-sent"), 1000 + i * 550);
       });
+      // Once the bubbles are in, the portrait plays the film, unless the visitor got there first.
+      setTimeout(() => { if (!touched) clips.tour(); }, 2200 + msgs.length * 550);
     };
-    measure();
-    place();
-    addEventListener("resize", () => { measure(); place(); });
-    if (document.fonts) document.fonts.ready.then(() => { measure(); place(); });
-    if (reduceMotion) return;
-    (function loop() {
-      if (!paused) angle += 0.0032;
-      place();
-      requestAnimationFrame(loop);
-    })();
   }
 
-  /* ---------- Hero: "… and a music producer / an ad film maker / …" ---------- */
-  function initRoller() {
-    const roller = $("#roleRoller");
-    if (!roller) return;
-    const words = data.alsoRoles || [];
-    const and = $(".hero__and");
-    if (!words.length) return roller.closest(".hero__roles-also")?.remove();
-    const article = (w) => (/^[aeiou]/i.test(w) ? "and an" : "and a");
-    const fit = (el) => (roller.style.width = `${el.offsetWidth}px`);
-    roller.innerHTML = `<span class="roller__word">${esc(words[0])}</span>`;
-    and.textContent = article(words[0]);
-    fit(roller.firstElementChild);
-    if (document.fonts) document.fonts.ready.then(() => fit(roller.lastElementChild));
-    addEventListener("resize", () => fit(roller.lastElementChild));
-    if (reduceMotion || words.length < 2) return;
-    let i = 0;
-    setInterval(() => {
-      if (document.hidden) return;
-      i = (i + 1) % words.length;
-      const old = roller.lastElementChild;
-      const next = document.createElement("span");
-      next.className = "roller__word is-in";
-      next.textContent = words[i];
-      roller.appendChild(next);
-      fit(next);
-      and.textContent = article(words[i]);
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        next.classList.remove("is-in");
-        old.classList.add("is-out");
-      }));
-      setTimeout(() => old.remove(), 700);
-    }, 2600);
+  /* The hero film (`heroFilm` in content.js) plays inside the portrait. It starts and ends on the
+     photo, so it slips in and out of it: once after the bubbles arrive, again when the portrait is
+     clicked, and from a passion's scene while that passion is pointed at. Nothing loads until it's
+     needed; reduced motion and data saver keep the photo. */
+  function initFilm(mark) {
+    const frame = $(".portrait__frame");
+    const film = data.heroFilm;
+    if (!frame || reduceMotion || !film || !film.src || !(film.scenes || []).length) {
+      return { show: mark, tour() {}, stop() {}, touring: false };
+    }
+    const scenes = film.scenes.slice().sort((a, b) => a.at - b.at);
+    const sceneAt = (t) => scenes.reduce((p, s) => (t >= s.at ? s.passion : p), -1);
+    let v = null;
+    let on = false;
+    let touring = false;
+    let visible = true;
+
+    const video = () => {
+      if (v) return v;
+      v = document.createElement("video");
+      v.className = "portrait__clip";
+      v.muted = v.defaultMuted = true;
+      v.playsInline = true;
+      v.preload = "auto";
+      v.setAttribute("muted", "");
+      v.setAttribute("playsinline", "");
+      v.setAttribute("aria-hidden", "true");
+      v.addEventListener("playing", () => { if (on) v.classList.add("is-on"); });
+      v.addEventListener("timeupdate", () => { if (on) mark(sceneAt(v.currentTime)); });
+      v.addEventListener("ended", () => hide());
+      v.src = asset(film.src);
+      frame.appendChild(v);
+      return v;
+    };
+
+    const play = (from) => {
+      const el = video();
+      on = true;
+      const go = () => {
+        // play() first: on a film that has ended it rewinds to the start, so seek after it.
+        if (visible) el.play().catch(() => {});
+        el.currentTime = from;
+      };
+      if (el.readyState >= 1) go();
+      else el.addEventListener("loadedmetadata", go, { once: true });
+      if (!el.paused) el.classList.add("is-on"); // still fading out: bring it straight back
+    };
+
+    const hide = () => {
+      on = false;
+      touring = false;
+      mark(-1);
+      if (!v) return;
+      v.classList.remove("is-on");
+      setTimeout(() => { if (!on) v.pause(); }, 400);
+    };
+
+    const show = (i) => {
+      const scene = scenes.find((s) => s.passion === i);
+      if (i < 0 || !scene) { if (on) hide(); return mark(i); } // no scene of its own: the photo stays
+      mark(i);
+      if (on && v && !v.paused && sceneAt(v.currentTime) === i) return; // already there
+      play(scene.at);
+    };
+
+    const stop = () => { touring = false; };
+
+    const tour = () => {
+      if (!visible || navigator.connection?.saveData) return;
+      touring = true;
+      play(0);
+    };
+
+    // Clicking the portrait plays the whole film again.
+    const portrait = frame.closest(".portrait");
+    if (portrait) {
+      portrait.dataset.cursor = "Play";
+      portrait.addEventListener("click", () => { touring = true; play(0); });
+    }
+
+    // The film rests while the hero is off screen.
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (!v || !on) return;
+      if (visible) v.play().catch(() => {});
+      else v.pause();
+    }).observe(frame);
+
+    return { show, tour, stop, get touring() { return touring; } };
   }
 
-  /* ---------- Loader (home, first visit): greetings + gradient ring ---------- */
+  /* ---------- Loader (home, first visit): greetings + a ring that fills ---------- */
   function preload(done) {
     const el = $("#loader");
     if (!el || reduceMotion || storage.get("loaded")) { el?.remove(); return done(); }
@@ -803,13 +811,12 @@
 
   renderCommon();
   renderHome();
-  renderExperiencePage();
   renderAboutPage();
-  fitName();
-  addEventListener("resize", fitName);
-  if (document.fonts) document.fonts.ready.then(fitName);
+  const layoutHero = () => { fitName(); placePhoto(); placeBadge(); };
+  layoutHero();
+  addEventListener("resize", layoutHero);
+  if (document.fonts) document.fonts.ready.then(layoutHero);
   initClock();
-  initModal();
   initBlogFilter();
   initNav();
   initCopy();
@@ -817,10 +824,10 @@
   initStatement();
   initPointerFx();
   initCursor();
-  initOrbit();
-  initRoller();
+  const startChat = initChat();
   preload(() => {
     document.body.classList.add("is-ready");
     initReveal();
+    startChat();
   });
 })();

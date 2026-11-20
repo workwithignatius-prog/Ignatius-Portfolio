@@ -1,5 +1,5 @@
 <!--meta
-title: Ignatius Nirmal G — Presales & Solutions Engineer
+title: Ignatius Nirmal G (itsigni) — music, films, design and more
 page: home
 -->
 <!doctype html>
@@ -16,8 +16,8 @@ page: home
   <!-- Hero -->
   <section class="hero" data-hero>
     <div class="hero__meta mono">
-      <span data-availability><span class="dot"></span> <span data-availability-text>Open to new opportunities</span></span>
-      <span data-location>{{location}}</span>
+      <span data-availability><span class="dot"></span> <span data-availability-text>Taking requests: collabs, gigs &amp; new roles</span></span>
+      <span class="hero__base"><span class="stamp stamp--hero" data-stamp></span><span data-location>{{location}}</span></span>
       <span>Local time <b data-clock>--:--</b> <span data-tz>IST</span></span>
     </div>
 
@@ -27,44 +27,41 @@ page: home
         <span class="sr-only" id="heroNameText">{{name}}!</span>
         <span class="hero__name" id="heroName" aria-hidden="true"></span>
       </h1>
-      <p class="hero__badge mono" id="heroBadge">{{role}}</p>
+      <p class="hero__badge mono" id="heroBadge">a.k.a. itsigni</p>
     </div>
 
     <div class="hero__layout">
       <div class="hero__intro">
-        <p class="hero__roles">
-          <span class="hero__roles-main" id="heroRole">{{role}}</span>
-          <span class="hero__roles-also"><span class="hero__and">and a</span> <span class="roller" id="roleRoller"><span class="roller__word">music producer</span></span></span>
-        </p>
-        <p class="hero__tagline" id="heroTagline"></p>
-        <p class="hero__now"><span class="dot"></span> <span id="heroNow"></span></p>
+        <p class="hero__statement" id="heroStatement">I make music, films &amp; designs, create content and train.</p>
+        <p class="hero__day" id="heroDay">By day, I'm a {{role}}.</p>
         <div class="hero__cta">
-          <a class="btn btn--primary btn--glow magnetic" data-calendly data-cursor="Book" href="{{root}}contact.html">
+          <a class="btn btn--primary magnetic" data-calendly data-cursor="Say hi" href="{{root}}contact.html">
             <span class="btn__dot" aria-hidden="true"></span> Let's talk
           </a>
-          <a class="btn btn--ghost magnetic" href="{{root}}experience.html">View experience <span aria-hidden="true">↘</span></a>
-          <a class="btn btn--ghost magnetic" id="resumeBtn" href="#" target="_blank" rel="noopener" hidden>Download CV</a>
+          <a class="btn btn--ghost magnetic" href="#b-sides">Explore the B-sides <span aria-hidden="true">↘</span></a>
         </div>
-        <div class="hero__companies">
-          <span class="mono">Worked with</span>
-          <ul class="logos" id="heroCompanies"></ul>
+        <div class="hero__find">
+          <span class="mono">Find me on</span>
+          <ul class="links" id="heroSocials"></ul>
         </div>
       </div>
 
       <div class="hero__visual" id="heroVisual">
-        <figure class="portrait tilt" data-tilt="7" id="portrait">
-          <div class="portrait__frame">
-            <div class="portrait__fallback" aria-hidden="true">IG</div>
-          </div>
-        </figure>
-        <ul class="orbit" id="orbit" aria-label="Beyond work"></ul>
+        <div class="hero__photo">
+          <figure class="portrait tilt" data-tilt="7" id="portrait">
+            <div class="portrait__frame">
+              <div class="portrait__fallback" aria-hidden="true">IG</div>
+            </div>
+          </figure>
+          <ul class="chat" id="chat" aria-label="What I do beyond work"></ul>
+        </div>
       </div>
     </div>
     <div class="hero__dots" aria-hidden="true"></div>
   </section>
 
   <!-- Marquee -->
-  <div class="marquee" aria-hidden="true"><div class="marquee__track" id="marquee"></div></div>
+  <div class="marquee" aria-hidden="true" data-dark><div class="marquee__track" id="marquee"></div></div>
 
   <!-- Statement -->
   <section class="section statement" id="intro">
@@ -72,56 +69,21 @@ page: home
     <p class="statement__text" id="statement"></p>
   </section>
 
-  <!-- Experience (dark panel) -->
-  <div class="panel panel--dark" id="experience" data-glow>
+  <!-- The B-sides (dark panel): album sleeves and liner notes -->
+  <div class="panel panel--dark" id="b-sides" data-dark>
     <section class="section">
       <header class="section__head">
         <div>
-          <p class="label">Experience</p>
-          <h2 class="reveal" data-scramble>Where I've worked</h2>
+          <p class="label">Beyond work</p>
+          <h2 class="reveal" data-scramble>The B-sides</h2>
         </div>
-        <a class="link-arrow link-arrow--light" href="{{root}}experience.html">Full experience <span aria-hidden="true">→</span></a>
+        <p class="section__note">What I do when I'm not at work. Hit play on any of them.</p>
       </header>
-      <ul class="numbers numbers--dark" id="xpNumbers"></ul>
-      <ol class="worklist" id="xpRows"></ol>
-      <p class="panel__subhead mono">Highlights</p>
-      <div class="awards" id="awards"></div>
+      <div class="albums" id="albums"></div>
+      <p class="panel__subhead mono">Liner notes</p>
+      <ol class="notes" id="notes"></ol>
     </section>
   </div>
-
-  <!-- Services -->
-  <section class="section" id="services">
-    <header class="section__head">
-      <div>
-        <p class="label">Services</p>
-        <h2 class="reveal" data-scramble>What I do</h2>
-      </div>
-    </header>
-    <div class="services" id="servicesList"></div>
-  </section>
-
-  <!-- Process -->
-  <section class="section" id="process">
-    <header class="section__head">
-      <div>
-        <p class="label">Process</p>
-        <h2 class="reveal" data-scramble>How I work</h2>
-      </div>
-    </header>
-    <ol class="process" id="processList"></ol>
-  </section>
-
-  <!-- B-sides -->
-  <section class="section" id="b-sides">
-    <header class="section__head">
-      <div>
-        <p class="label">Beyond work</p>
-        <h2 class="reveal" data-scramble>The B-sides</h2>
-      </div>
-      <p class="section__note">Off the clock, I make music, ad films and designs, create content, and train.</p>
-    </header>
-    <div class="albums" id="albums"></div>
-  </section>
 
   <!-- posts:latest -->
 
@@ -129,7 +91,6 @@ page: home
 </main>
 
 <!-- include:footer -->
-<!-- include:modal -->
 <!-- include:scripts -->
 </body>
 </html>

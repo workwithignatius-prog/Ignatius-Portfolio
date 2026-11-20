@@ -22,9 +22,14 @@
         <span class="contact-list__label mono">LinkedIn</span>
         <a class="contact-list__value" data-social-link="LinkedIn" href="#" target="_blank" rel="noopener">linkedin.com/in/itsigni ↗</a>
       </li>
-      <li class="contact-list__item glow">
-        <span class="contact-list__label mono">Based in</span>
-        <p class="contact-list__value">{{location}} · <span data-clock>--:--</span> <span data-tz>IST</span></p>
+      <li class="contact-list__item contact-base">
+        <div class="contact-base__text">
+          <b class="contact-base__time" data-clock="split">--:--</b>
+          <span class="contact-base__city"><span data-city>Chennai</span>,</span>
+          <span class="contact-base__region" data-region>Tamil Nadu, India</span>
+          <span class="contact-base__note mono">My base · <span data-tz>IST</span></span>
+        </div>
+        <span class="stamp stamp--card" data-stamp></span>
       </li>
     </ul>
 
@@ -36,13 +41,13 @@
         </label>
         <label class="field">
           <span>Email</span>
-          <input id="fEmail" name="email" type="email" autocomplete="email" required placeholder="jane@company.com">
+          <input id="fEmail" name="email" type="email" autocomplete="email" required placeholder="you@email.com">
         </label>
       </div>
       <div class="form__row">
         <label class="field">
-          <span>Company <em>(optional)</em></span>
-          <input id="fCompany" name="company" type="text" autocomplete="organization" placeholder="Acme Inc.">
+          <span>Website or social <em>(optional)</em></span>
+          <input id="fLink" name="link" type="text" autocomplete="url" placeholder="instagram.com/you">
         </label>
         <label class="field">
           <span>I'm reaching out about</span>
@@ -51,11 +56,11 @@
       </div>
       <label class="field">
         <span>Message</span>
-        <textarea id="fMessage" name="message" rows="5" required placeholder="What are you working on, and how can I help?"></textarea>
+        <textarea id="fMessage" name="message" rows="5" required placeholder="What's on your mind?"></textarea>
       </label>
       <input class="form__trap" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
       <div class="form__foot">
-        <button class="btn btn--primary btn--glow" id="formSubmit" type="submit">Send message <span aria-hidden="true">→</span></button>
+        <button class="btn btn--primary" id="formSubmit" type="submit">Send message <span aria-hidden="true">→</span></button>
         <p class="form__status" id="formStatus" role="status" aria-live="polite"></p>
       </div>
     </form>

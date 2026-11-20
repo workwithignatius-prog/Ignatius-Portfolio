@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 150">
+  <title>Chennai Central with an auto-rickshaw</title>
+  <!-- Sky, sun, clouds, birds -->
+  <rect width="120" height="150" fill="#a8d5db"/>
+  <circle cx="95" cy="28" r="13" fill="#f5b700"/>
+  <g fill="#fffdf8">
+    <ellipse cx="22" cy="30" rx="12" ry="5"/><ellipse cx="28" cy="26" rx="7" ry="6"/><ellipse cx="17" cy="27" rx="5" ry="4"/>
+    <ellipse cx="86" cy="52" rx="10" ry="4"/><ellipse cx="91" cy="49" rx="6" ry="4.5"/>
+  </g>
+  <g fill="none" stroke="#1c1a17" stroke-width="1" stroke-linecap="round">
+    <path d="M38 22l2.5 2 2.5-2"/><path d="M45 17l2 1.6 2-1.6"/>
+  </g>
+
+  <!-- Corner towers -->
+  <rect x="7" y="66" width="9" height="46" fill="#d2421f"/>
+  <path d="M6 66l5.5-11 5.5 11z" fill="#a8341a"/>
+  <rect x="104" y="66" width="9" height="46" fill="#d2421f"/>
+  <path d="M103 66l5.5-11 5.5 11z" fill="#a8341a"/>
+
+  <!-- Wings -->
+  <rect x="14" y="76" width="38" height="36" fill="#d2421f"/>
+  <rect x="68" y="76" width="38" height="36" fill="#d2421f"/>
+  <rect x="12" y="73" width="42" height="4" fill="#f5ead6"/>
+  <rect x="66" y="73" width="42" height="4" fill="#f5ead6"/>
+  <g fill="#f5ead6">
+    <rect x="17" y="83" width="6" height="11" rx="3"/><rect x="26" y="83" width="6" height="11" rx="3"/>
+    <rect x="35" y="83" width="6" height="11" rx="3"/><rect x="44" y="83" width="6" height="11" rx="3"/>
+    <rect x="71" y="83" width="6" height="11" rx="3"/><rect x="80" y="83" width="6" height="11" rx="3"/>
+    <rect x="89" y="83" width="6" height="11" rx="3"/><rect x="98" y="83" width="6" height="11" rx="3"/>
+    <rect x="8.5" y="74" width="6" height="2"/><rect x="105.5" y="74" width="6" height="2"/>
+  </g>
+  <g fill="#a8341a">
+    <rect x="14" y="100" width="38" height="12"/><rect x="68" y="100" width="38" height="12"/>
+  </g>
+  <g fill="#1c1a17" opacity=".75">
+    <rect x="18" y="103" width="5" height="9" rx="2.5"/><rect x="27" y="103" width="5" height="9" rx="2.5"/>
+    <rect x="36" y="103" width="5" height="9" rx="2.5"/><rect x="45" y="103" width="5" height="9" rx="2.5"/>
+    <rect x="72" y="103" width="5" height="9" rx="2.5"/><rect x="81" y="103" width="5" height="9" rx="2.5"/>
+    <rect x="90" y="103" width="5" height="9" rx="2.5"/><rect x="99" y="103" width="5" height="9" rx="2.5"/>
+  </g>
+
+  <!-- Clock tower -->
+  <rect x="49" y="47" width="22" height="65" fill="#d2421f"/>
+  <rect x="52" y="33" width="16" height="15" fill="#d2421f"/>
+  <path d="M50.5 33L60 12l9.5 21z" fill="#a8341a"/>
+  <path d="M60 12V6" stroke="#1c1a17" stroke-width="1"/>
+  <path d="M60 6l4 1.5-4 1.5z" fill="#f5b700"/>
+  <rect x="47" y="46" width="26" height="3.5" fill="#f5ead6"/>
+  <rect x="47" y="68" width="26" height="3" fill="#f5ead6"/>
+  <circle cx="60" cy="40.5" r="5.4" fill="#fffdf8" stroke="#1c1a17" stroke-width="1"/>
+  <path d="M60 40.5V37M60 40.5l2.6 1.4" stroke="#1c1a17" stroke-width="1" stroke-linecap="round"/>
+  <g fill="#f5ead6">
+    <rect x="54" y="53" width="4.5" height="10" rx="2.25"/><rect x="61.5" y="53" width="4.5" height="10" rx="2.25"/>
+    <rect x="54" y="75" width="4.5" height="10" rx="2.25"/><rect x="61.5" y="75" width="4.5" height="10" rx="2.25"/>
+  </g>
+  <rect x="54" y="95" width="12" height="17" rx="6" fill="#1c1a17" opacity=".8"/>
+
+  <!-- Palm tree -->
+  <path d="M110 114c0-10-1-20-6-29" fill="none" stroke="#7a4a2a" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#2a7549">
+    <path d="M104 85c-6-5-14-5-19-1 6 0 12 1 19 1z"/>
+    <path d="M104 85c-2-7-9-11-15-11 5 3 10 6 15 11z"/>
+    <path d="M104 85c3-7 10-9 16-7-6 1-11 4-16 7z"/>
+    <path d="M104 85c6-3 13-1 16 4-6-3-11-4-16-4z"/>
+    <path d="M104 85c1-6-1-12-5-15 1 5 3 10 5 15z"/>
+  </g>
+
+  <!-- Pavement and road -->
+  <rect y="112" width="120" height="6" fill="#e8dcc4"/>
+  <rect y="118" width="120" height="32" fill="#3a3430"/>
+  <g fill="#fffdf8" opacity=".8">
+    <rect x="4" y="134" width="12" height="2"/><rect x="26" y="134" width="12" height="2"/><rect x="48" y="134" width="12" height="2"/>
+    <rect x="70" y="134" width="12" height="2"/><rect x="92" y="134" width="12" height="2"/><rect x="114" y="134" width="12" height="2"/>
+  </g>
+
+  <!-- Auto-rickshaw -->
+  <g>
+    <path d="M14 126v-8c0-7 5-12 12-12h11c3 0 5 2 5 5v15z" fill="#1c1a17"/>
+    <path d="M16 127v-9h26v-3l9 7v5z" fill="#f5b700"/>
+    <rect x="28" y="111" width="10" height="7" rx="1.5" fill="#a8d5db"/>
+    <rect x="18" y="111" width="7" height="7" rx="1.5" fill="#a8d5db"/>
+    <path d="M42 115l6 6" stroke="#1c1a17" stroke-width="1.2"/>
+    <rect x="14" y="125" width="38" height="3" rx="1.5" fill="#1c1a17"/>
+    <circle cx="21" cy="129" r="4.2" fill="#1c1a17"/><circle cx="21" cy="129" r="1.6" fill="#e8dcc4"/>
+    <circle cx="47" cy="129" r="4.2" fill="#1c1a17"/><circle cx="47" cy="129" r="1.6" fill="#e8dcc4"/>
+  </g>
+</svg>

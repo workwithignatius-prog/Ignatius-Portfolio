@@ -10,6 +10,7 @@ const types = {
   ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".json": "application/json",
   ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp",
   ".gif": "image/gif", ".xml": "application/xml", ".txt": "text/plain", ".pdf": "application/pdf", ".ico": "image/x-icon",
+  ".mp4": "video/mp4", ".webm": "video/webm",
 };
 
 http
@@ -21,7 +22,18 @@ http
       res.writeHead(404, { "Content-Type": types[".html"] });
       return fs.createReadStream(path.join(dir, "404.html")).on("error", () => res.end("Not found")).pipe(res);
     }
-    res.writeHead(200, { "Content-Type": types[path.extname(file).toLowerCase()] || "application/octet-stream" });
+    const type = types[path.extname(file).toLowerCase()] || "application/octet-stream";
+    const size = fs.statSync(file).size;
+    // Byte ranges let videos seek, as they can on GitHub Pages.
+    const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || "");
+    if (range && (range[1] !== "" || range[2] !== "")) {
+      const start = range[1] === "" ? Math.max(0, size - Number(range[2])) : Number(range[1]);
+      const end = range[1] !== "" && range[2] !== "" ? Math.min(Number(range[2]), size - 1) : size - 1;
+      if (start > end) return res.writeHead(416, { "Content-Range": `bytes */${size}` }).end();
+      res.writeHead(206, { "Content-Type": type, "Content-Length": end - start + 1, "Content-Range": `bytes ${start}-${end}/${size}`, "Accept-Ranges": "bytes" });
+      return fs.createReadStream(file, { start, end }).pipe(res);
+    }
+    res.writeHead(200, { "Content-Type": type, "Content-Length": size, "Accept-Ranges": "bytes" });
     fs.createReadStream(file).pipe(res);
   })
   .listen(port, () => console.log(`Previewing ${path.relative(process.cwd(), dir) || "."} at http://localhost:${port}`));

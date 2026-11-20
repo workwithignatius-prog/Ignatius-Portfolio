@@ -5,17 +5,22 @@ window.PORTFOLIO = {
   fullName: "Ignatius Nirmal G",
   handle: "itsigni",
   greeting: "Heyyya, I'm",
-  heroBadge: "Presales · Solutions · AI/ML",
-  role: "Presales & Solutions Engineer",
+  heroBadge: "a.k.a. itsigni",
+  role: "Presales & Solutions Engineer", // the day job: the hero says "By day, I'm a …"
+  // The hero's big line. Each passion's `word` below is underlined in that passion's colour
+  // and links to its record in the B-sides.
+  headline: "I make music, films & designs, create content and train.",
   tagline:
-    "I help SaaS teams win the right deals by turning client needs into clear solutions, sharp demos and proposals that close.",
+    "This is my corner of the internet: the music, films and designs I make, the content I create and the training in between.",
   metaDescription:
-    "Ignatius Nirmal G is a presales and solutions engineer in Chennai, India with 5+ years in SaaS: solution design, product demos, RFPs and AI/ML solutions.",
+    "Ignatius Nirmal G (itsigni) from Chennai, India: music producer, ad film maker, designer and content creator who trains in calisthenics and the gym.",
   location: "Chennai, India",
+  city: "Chennai", // the postage stamp and the "My base" card
+  region: "Tamil Nadu, India",
   timezone: "Asia/Kolkata", // IANA zone for the live clock
   timezoneLabel: "IST",
   available: true,
-  availability: "Open to new opportunities",
+  availability: "Taking requests: collabs, gigs & new roles",
   email: "hello@itsigni.com",
 
   // The live address of the site, used in share links, the RSS feed and the sitemap.
@@ -24,264 +29,109 @@ window.PORTFOLIO = {
 
   photo: "assets/me.jpg",
 
-  // "Let's talk" buttons open this link. Until it's set they open the contact page.
-  calendlyUrl: "", // e.g. "https://calendly.com/itsigni/30min"
-
-  // Contact form. Create a free form at https://formspree.io and paste its endpoint,
-  // e.g. "https://formspree.io/f/abcdwxyz". If left empty, the form opens the
-  // visitor's email app with the message filled in instead.
-  formEndpoint: "",
-  contactTopics: [
-    "A job opportunity",
-    "Presales or solution consulting",
-    "A product demo or POC",
-    "RFP, RFQ or RFI support",
-    "An AI/ML solution",
-    "Speaking or collaboration",
-    "Something else",
-  ],
-
-  resumeUrl: "", // e.g. "assets/ignatius-nirmal-g-cv.pdf" to show a Download CV button
-
-  current: { role: "Product, Presales & Solution Engineer", company: "impress.ai", since: "May 2024" },
-
-  stats: [
-    { value: 5, suffix: "+", label: "Years in SaaS presales" },
-    { value: 5, label: "Companies, startup to enterprise" },
-    { value: 11, label: "Professional certifications" },
-    { value: 30, prefix: "$", suffix: "K", label: "Revenue in 3 months at BookingBee.ai" },
-  ],
-
-  // The hero's second line cycles through these: "Presales & solutions engineer and a …"
-  alsoRoles: ["music producer", "ad film maker", "designer", "content creator"],
-
-  // "The B-sides": life beyond work. Each one gets a generated album cover.
-  // art: music, film, design, content, calisthenics or gym. Optional: cover (an image
-  // path, e.g. "assets/b-sides/music.jpg") and link (Spotify, YouTube, Instagram…).
-  passions: [
-    { title: "Music Producer", tagline: "Beats, mixes and sound design", art: "music", cover: "", link: "" },
-    { title: "Ad Film Maker", tagline: "From concept to the final cut", art: "film", cover: "", link: "" },
-    { title: "Designer", tagline: "Brands, visuals and layouts", art: "design", cover: "", link: "" },
-    { title: "Content Creator", tagline: "Stories for the feed", art: "content", cover: "", link: "" },
-    { title: "Calisthenics", tagline: "Bodyweight strength and skills", art: "calisthenics", cover: "", link: "" },
-    { title: "Gym", tagline: "Strength training", art: "gym", cover: "", link: "" },
-  ],
-
-  statement:
-    "Five years in presales taught me that the best deals start with listening. I turn complex client needs into clear solutions, compelling demos and proposals that drive real revenue growth.",
-
-  marquee: ["Presales", "Solution engineering", "RFPs & proposals", "Product demos", "AI/ML solutions", "API integrations", "Go-to-market", "SaaS"],
-
-  experience: [
-    {
-      company: "impress.ai",
-      logo: "", // add a file such as "assets/logos/impress-ai.svg"
-      role: "Product, Presales & Solution Engineer",
-      period: "May 2024 — Present",
-      location: "India",
-      summary: "Own presales end to end, from discovery to AI-powered solutions, RFP automation and a smooth hand-off to implementation.",
-      highlights: [
-        "Run in-depth discovery sessions with clients and design solution proposals tailored to each client's needs.",
-        "Design and deploy AI/ML solutions with prompt engineering and custom prompt pipelines for summarisation, Q&A, chatbots and data extraction.",
-        "Respond to RFPs and RFQs, and build bots that answer clients' queries accurately and on time.",
-        "Develop and integrate RESTful APIs, working on both API consumption and API development for secure, scalable integrations.",
-        "Own HubSpot across the company.",
-        "Act as the liaison between product, engineering and sales, and shape the go-to-market strategy for new feature releases.",
-        "Support customers after the sale with troubleshooting and onboarding, and hand over to implementation with thorough documentation.",
-      ],
-      tags: ["AI/ML", "RFPs", "APIs", "HubSpot"],
-    },
-    {
-      company: "BookingBee.ai",
-      logo: "", // add a file such as "assets/logos/bookingbee.svg"
-      role: "Founding Member — Product & Solutions",
-      period: "Nov 2022 — Jan 2024",
-      location: "India",
-      summary: "Founding team member who built the go-to-market strategy and the sales team from scratch.",
-      highlights: [
-        "Created the full go-to-market strategy and led team formation, training the team on cold calling, solution selling and onboarding.",
-        "Reached $30,000 in revenue within 3 months.",
-        "Worked hands-on with AI/ML models, including fine-tuning and deploying large language models like Meta's LLaMA and Dasha.AI for real-world use cases.",
-        "Developed and integrated RESTful APIs between front-end and back-end services.",
-        "Refined the Ideal Customer Profile (ICP) with SDRs to sharpen pipeline accuracy and targeting.",
-        "Ran customer discovery and product demos, feeding what I learned into product iterations and roadmap decisions.",
-        "Drove customer onboarding, solution customisation and go-live.",
-      ],
-      tags: ["Startup", "Go-to-market", "LLMs"],
-      award: "$30K revenue in 3 months",
-    },
-    {
-      company: "Vajro",
-      logo: "", // add a file such as "assets/logos/vajro.svg"
-      role: "Presales Consultant",
-      period: "Jan 2022 — Jan 2023",
-      location: "India",
-      summary: "Presales for Vajro's mobile app platform: discovery, demos and solution blueprints.",
-      highlights: [
-        "Ran discovery sessions to understand client requirements and align them with Vajro's mobile app platform.",
-        "Delivered sales presentations and technical product demos that showed product advantages and relevant use cases.",
-        "Built trust with prospects alongside the sales team by answering technical concerns with customised solutions.",
-        "Developed solution blueprints that clearly set out Vajro's value proposition.",
-        "Planned account and territory strategies to find key stakeholders and grow accounts through upselling and cross-selling.",
-        "Supported customers after the sale with troubleshooting and onboarding.",
-      ],
-      tags: ["Mobile commerce", "Demos", "Account strategy"],
-    },
-    {
-      company: "Zoho Corporation",
-      logo: "assets/logos/zoho.svg",
-      role: "Presales Engineer",
-      period: "Oct 2020 — Dec 2021",
-      location: "India",
-      summary: "Technical partner to sales through the full cycle: live demos, POCs, SOWs and RFP responses.",
-      highlights: [
-        "Provided technical expertise to sales throughout the sales cycle, from proposal development to client engagement.",
-        "Ran live product demonstrations and answered prospects' questions to speed up their decisions.",
-        "Drafted Statements of Work (SOWs), Standard Operating Procedures (SOPs), Proofs of Concept (POCs) and responses to RFPs, RFIs and RFQs.",
-        "Identified technical challenges early and delivered proactive solutions to prospects.",
-        "Built lasting client relationships as a trusted technical advisor.",
-      ],
-      tags: ["Enterprise SaaS", "Zoho One", "POCs"],
-      award: "Best Performer Award, 2021",
-    },
-    {
-      company: "Infosys",
-      logo: "assets/logos/infosys.svg",
-      role: "Presales & Platform Consultant",
-      period: "Aug 2019 — Jul 2020",
-      location: "India",
-      summary: "Presales for Infosys platforms, including Cobalt and EdgeVerve, for enterprise customers.",
-      highlights: [
-        "Worked with sales and business development teams to solve clients' technical challenges with Infosys platforms, including Cobalt and EdgeVerve.",
-        "Contributed to solution architecture and effort estimation in proposal documents.",
-        "Delivered product and solution demonstrations tailored to clients across industries.",
-        "Answered client inquiries with proofs of concept and responses to RFIs and RFPs, helping win new business.",
-        "Advocated for Infosys platform solutions to meet the needs of enterprise customers.",
-      ],
-      tags: ["Enterprise", "Cloud platforms", "Solution architecture"],
-      award: "Most Efficient Presales Player, Q1—Q3",
-    },
-  ],
-
-  achievements: [
-    {
-      title: "Built a sales team from scratch",
-      org: "BookingBee.ai · 2022",
-      text: "Created the full go-to-market strategy, led team formation, trained the team on cold calling, solution selling and onboarding, and reached $30,000 in revenue within 3 months.",
-    },
-    {
-      title: "Best Performer Award",
-      org: "Zoho · 2021",
-      text: "Named best performer for April, May, August and November 2021, recognised for tailored product demos that significantly increased Zoho One conversions.",
-    },
-    {
-      title: "Most Efficient Presales Player",
-      org: "Infosys · Q1—Q3",
-      text: "Achieved the highest number of presales conversions through strong technical pitches and close client collaboration.",
-    },
-    {
-      title: "Client-centric innovation",
-      org: "Across every role",
-      text: "Routinely designed customised technical solutions that matched customer needs precisely and increased deal closures.",
-    },
-  ],
-
-  services: [
-    {
-      title: "Presales & solution consulting",
-      detail: "Discovery sessions, requirement analysis and tailored solution proposals that map the product to each client's real needs.",
-      tags: ["Discovery", "Solution design", "Proposals"],
-    },
-    {
-      title: "RFPs, RFQs & RFIs",
-      detail: "Clear, persuasive responses, plus the SOWs, SOPs and POCs that move an evaluation forward.",
-      tags: ["RFP", "SOW", "POC"],
-    },
-    {
-      title: "Product demos",
-      detail: "Technical demonstrations built around the buyer's own use cases, live or recorded.",
-      tags: ["Live demos", "POCs", "Loom"],
-    },
-    {
-      title: "AI/ML solutions",
-      detail: "Prompt engineering, custom prompt pipelines and LLM fine-tuning for summarisation, Q&A, chatbots and data extraction.",
-      tags: ["Prompt engineering", "LLMs", "Chatbots"],
-    },
-    {
-      title: "API integrations",
-      detail: "Designing, consuming and troubleshooting REST and GraphQL APIs so solutions work with the client's stack.",
-      tags: ["REST", "GraphQL", "Postman"],
-    },
-    {
-      title: "Go-to-market & enablement",
-      detail: "Go-to-market plans for launches, ICP refinement with SDRs, and training sales teams on solution selling.",
-      tags: ["GTM", "ICP", "Training"],
-    },
-  ],
-
-  process: [
-    { step: "Discover", detail: "Discovery sessions to understand the client's goals, current challenges and what success looks like." },
-    { step: "Design", detail: "A tailored solution: proposals, blueprints and architecture, plus RFP, RFQ and RFI responses." },
-    { step: "Demonstrate", detail: "Product demos and POCs that map features to the client's real use cases." },
-    { step: "Deliver", detail: "A smooth hand-over to implementation with clear documentation, onboarding and post-sale support." },
-  ],
-
-  about: {
-    paragraphs: [
-      "I'm Ignatius Nirmal G, a presales and solutions engineer from Chennai with 5+ years in SaaS. I work between sales, product and engineering: I find out what a client really needs, then shape the solution, demo and proposal that gets them there.",
-      "I've done this at enterprises like Zoho and Infosys and at fast-moving startups like Vajro, BookingBee.ai and impress.ai. That means responding to RFPs, RFQs and RFIs, building AI/ML solutions with prompt engineering and custom pipelines, and integrating APIs so it all works in the real world.",
-      "I care about value-based selling, smooth customer onboarding and sales processes that scale.",
-      "Outside work, I'm a music producer, ad film maker, designer and content creator, and you'll find me doing calisthenics or at the gym.",
-    ],
-    facts: [
-      { label: "Based in", value: "Chennai, Tamil Nadu, India" },
-      { label: "Currently", value: "impress.ai" },
-      { label: "Experience", value: "5+ years in SaaS" },
-      { label: "Languages", value: "English & Tamil" },
+  // A short silent film that plays inside the hero portrait. It starts and ends on the photo
+  // and spins through each passion. `scenes` gives the second at which each passion (its place
+  // in `passions` below, from 0) takes over, so its word and bubble light up with it; -1 is the photo.
+  heroFilm: {
+    src: "assets/clips/hero-film.mp4",
+    scenes: [
+      { passion: 0, at: 2.2 }, // concert grand piano: front, three-quarter and the crowd
+      { passion: 1, at: 9.9 }, // ad film set, in a bomber
+      { passion: 2, at: 14.3 }, // painting, then sketching, as Leonardo da Vinci
+      { passion: 3, at: 21.7 }, // vlogging in Paris, with a drone shot over the Seine
+      { passion: 4, at: 29.4 }, // pull-ups, a pistol squat and a handstand at sunset
+      { passion: 5, at: 37.3 }, // dumbbell curls in the gym
+      { passion: -1, at: 41.6 }, // spinning back into the photo
     ],
   },
 
-  toolbox: [
-    { group: "CRM & ERP", items: ["Salesforce", "Zoho", "HubSpot"] },
-    { group: "Sales intelligence", items: ["ZoomInfo", "Lusha", "Apollo.io", "Amplemarket"] },
-    { group: "APIs & integration", items: ["Postman", "GraphQL Voyager", "Prisma"] },
-    { group: "Code", items: ["HTML", "CSS", "JavaScript", "TypeScript", "Python", "VS Code", "Sublime Text"] },
-    { group: "Demos & design", items: ["Loom", "Adobe Presenter Video Express", "Figma", "Adobe Photoshop", "Adobe Premiere Pro"] },
-    { group: "Diagrams & whiteboards", items: ["Draw.io", "FigJam", "Miro"] },
-    { group: "Project management", items: ["Jira", "Trello", "Asana"] },
-    { group: "BI & reporting", items: ["Tableau", "Power BI", "Looker"] },
+  // "Let's talk" buttons open this link. Until it's set they open the contact page.
+  calendlyUrl: "", // e.g. "https://calendly.com/itsigni/30min"
+
+  // Contact form: every message is emailed to you through Web3Forms (free, 250 a month).
+  // Get a key at https://web3forms.com by entering the inbox that should receive the
+  // messages, then paste it here. The key is safe to publish: it never reveals your address.
+  // Until it's set, the form opens the visitor's email app with the message filled in.
+  formAccessKey: "",
+  contactTopics: ["Just saying hi", "A collaboration", "Music", "An ad film or video", "Design", "Content", "Something else"],
+
+  // "The B-sides": everything beyond the day job. Each one gets a generated album cover,
+  // a chat bubble in the hero, a line in the liner notes and, if its `word` appears in the
+  // headline, a coloured underline there.
+  // art: music, film, design, content, calisthenics or gym. Optional: cover (an image
+  // path, e.g. "assets/b-sides/music.jpg") and link (Spotify, YouTube, Instagram…).
+  passions: [
+    {
+      title: "Music Producer",
+      tagline: "Beats, mixes and sound design",
+      story: "I make beats, mix tracks and design sounds, building each track from the first loop to the final mix.",
+      art: "music", word: "music", cover: "", link: "",
+    },
+    {
+      title: "Ad Film Maker",
+      tagline: "From concept to the final cut",
+      story: "I make ad films: the idea, the script, the shoot and the edit, all the way to the final cut.",
+      art: "film", word: "films", cover: "", link: "",
+    },
+    {
+      title: "Designer",
+      tagline: "Brands, visuals and layouts",
+      story: "I design brands, visuals and layouts, from logos to posts for the feed.",
+      art: "design", word: "designs", cover: "", link: "",
+    },
+    {
+      title: "Content Creator",
+      tagline: "Stories for the feed",
+      story: "I create content and share the stories behind everything else on this page.",
+      art: "content", word: "content", cover: "", link: "",
+    },
+    {
+      title: "Calisthenics",
+      tagline: "Bodyweight strength and skills",
+      story: "Bodyweight strength and skills, trained on the bars and the floor.",
+      art: "calisthenics", word: "train", cover: "", link: "",
+    },
+    {
+      title: "Gym",
+      tagline: "Strength training",
+      story: "Strength training in the gym, alongside the calisthenics.",
+      art: "gym", cover: "", link: "",
+    },
   ],
 
-  competencies: [
-    "Solution architecture", "Technical demonstrations", "Proposals & RFPs", "Presales & post-sales", "Value-based selling",
-    "C-level stakeholder management", "REST & GraphQL APIs", "SDLC & agile", "Unit, integration & system testing",
-    "Business development", "Account management & renewals", "Client retention", "Relationship management",
-    "Presentation & communication", "Customer engagement & adoption", "Lead generation & prospecting", "Upselling & cross-selling",
-    "Business reviews & documentation", "Leadership & team management", "Problem solving & strategy", "Training & onboarding",
-    "Business analysis & user research", "Growth marketing & copywriting", "Webinars & slide decks", "SOPs",
-    "Customer-centric mindset", "Troubleshooting", "Customer success", "Adoption & CSAT metrics", "Digital transformation",
-  ],
+  // The intro line under the hero. Wrap words in *stars* to colour them.
+  statement:
+    "Think of this site as a record. The day job is *side A.* Everything I love making is on the *B-side,* so flip it over and hit play.",
 
-  certifications: [
-    { name: "Project Management Professional (PMP)", issuer: "Project Management Institute" },
-    { name: "Certified Business Analysis Professional (CBAP)", issuer: "IIBA" },
-    { name: "Certified ScrumMaster (CSM)", issuer: "Scrum Alliance" },
-    { name: "Certified Management Consultant (CMC)", issuer: "Institute of Management Consultants" },
-    { name: "IBM Product Manager Professional Certificate", issuer: "IBM · Coursera" },
-    { name: "AI for Product Management", issuer: "Pendo" },
-    { name: "Building Products in B2B SaaS", issuer: "GrowthSchool" },
-    { name: "Fundamentals of Product Management", issuer: "Open Source" },
-    { name: "SaaS in Cloud Computing", issuer: "Great Learning" },
-    { name: "Customer Success", issuer: "Coursera" },
-    { name: "API Integrations", issuer: "Udemy" },
-  ],
+  marquee: ["Music production", "Ad films", "Design", "Content", "Calisthenics", "Gym", "Chennai", "itsigni"],
 
+  about: {
+    paragraphs: [
+      "I'm Ignatius Nirmal G, itsigni online, and I'm based in Chennai, India. By day, I'm a presales and solutions engineer.",
+      "The rest of the time, I make things. I produce music: beats, mixes and sound design. I make ad films, from the first concept to the final cut. I design brands, visuals and layouts, and I create content and share the stories behind it.",
+      "And I train: calisthenics for bodyweight strength and skills, and the gym for strength.",
+      "This site is where all of it lives, along with a blog where I write about whatever I'm into.",
+    ],
+    facts: [
+      { label: "Based in", value: "Chennai, India" },
+      { label: "Online as", value: "@itsigni" },
+      { label: "Day job", value: "Presales & Solutions Engineer" },
+      { label: "Speaks", value: "English & தமிழ்" },
+      { label: "Makes", value: "Music & ad films" },
+      { label: "Designs", value: "Brands, visuals & layouts" },
+      { label: "Creates", value: "Stories for the feed" },
+      { label: "Trains", value: "Calisthenics & gym" },
+    ],
+  },
+
+  // Shown in the hero ("Find me on"), the contact section and the footer.
+  // Add Instagram, YouTube, Spotify, Behance… the same way.
   socials: [
     { label: "LinkedIn", url: "https://www.linkedin.com/in/itsigni/" },
     { label: "GitHub", url: "https://github.com/workwithignatius-prog" },
   ],
 
-  blogDescription: "Writing on presales, solution engineering, SaaS and AI.",
+  blogDescription: "Notes on music, films, design, training and whatever else I'm into.",
 
   // Greetings cycled on the home page's loading screen.
   greetings: ["Hello", "வணக்கம்", "नमस्ते", "Hola", "Bonjour", "Ciao", "こんにちは"],
