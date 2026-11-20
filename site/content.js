@@ -85,22 +85,6 @@ window.PORTFOLIO = {
 
   marquee: ["Music production", "Ad films", "Design", "Content", "Calisthenics", "Gym", "Chennai", "itsigni"],
 
-  // "Quick chat" on the home page: the other things, as a conversation.
-  // from: "you" (the visitor, on the right) or "me" (on the left).
-  chat: [
-    { from: "you", text: "Hey! Who's this?" },
-    { from: "me", text: "Heyyya! I'm Ignatius, itsigni online. I'm based in Chennai, India." },
-    { from: "you", text: "What do you do?" },
-    { from: "me", text: "By day, I'm a presales and solutions engineer." },
-    { from: "you", text: "And the rest of the time?" },
-    { from: "me", text: "I make music, shoot ad films, design and create content." },
-    { from: "me", text: "And I train: calisthenics and the gym." },
-    { from: "you", text: "Which languages do you speak?" },
-    { from: "me", text: "English and தமிழ்." },
-    { from: "you", text: "How do I reach you?" },
-    { from: "me", text: "Write to me below. I usually reply within two working days." },
-  ],
-
   about: {
     paragraphs: [
       "I'm Ignatius Nirmal G, itsigni online, and I'm based in Chennai, India. By day, I'm a presales and solutions engineer.",

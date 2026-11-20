@@ -407,44 +407,6 @@ a.hero__now:hover { translate: 0 -2px; color: var(--ink); }
 .panel--dark .album__vinyl { box-shadow: 0 0 0 1px rgba(245, 240, 230, .16), 0 12px 26px -10px rgba(0, 0, 0, .6); }
 @media (max-width: 560px) { .albums { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 20px; } }
 
-/* ---------- Quick chat: the other things, as a conversation ---------- */
-.convo { max-width: 720px; margin: 0 auto; overflow: hidden; border: 1.5px solid var(--ink); border-radius: 28px; background: #fff; box-shadow: 12px 12px 0 var(--yellow); }
-.convo__head { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--card); }
-.convo__avatar { display: grid; place-items: center; flex: none; width: 42px; height: 42px; overflow: hidden; border-radius: 50%; background: var(--ink); }
-.convo__avatar img { width: 100%; height: 100%; object-fit: cover; }
-.convo__avatar .portrait__fallback { font-size: 14px; }
-.convo__who { display: flex; flex-direction: column; line-height: 1.25; }
-.convo__who b { font: 700 17px var(--display); }
-.convo__who > span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
-.convo__handle { margin-left: auto; font-size: 12px; color: var(--muted); }
-.convo__thread { list-style: none; margin: 0; padding: 24px 20px; display: flex; flex-direction: column; gap: 6px; }
-.msg { position: relative; display: flex; }
-.msg--you { justify-content: flex-end; }
-.msg--me + .msg--you, .msg--you + .msg--me { margin-top: 12px; }
-.msg__bubble { max-width: min(78%, 460px); margin: 0; padding: 10px 16px; border-radius: 20px; font-size: 16px; line-height: 1.45;
-  opacity: 0; scale: .6; transition: opacity .2s, scale .45s cubic-bezier(.34, 1.56, .64, 1); }
-.msg--me .msg__bubble { background: var(--yellow); color: var(--ink); border-bottom-left-radius: 5px; transform-origin: 0 100%; }
-.msg--you .msg__bubble { background: var(--ink); color: var(--paper); border-bottom-right-radius: 5px; transform-origin: 100% 100%; }
-.msg__typing { position: absolute; left: 0; bottom: 0; display: flex; align-items: center; gap: 4px; height: 44px; padding: 0 16px;
-  border-radius: 20px 20px 20px 5px; background: var(--paper-2); opacity: 0; transition: opacity .2s; }
-.msg__typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--ink); animation: typing 1s ease-in-out infinite; }
-.msg__typing i:nth-child(2) { animation-delay: .15s; }
-.msg__typing i:nth-child(3) { animation-delay: .3s; }
-.msg.is-typing .msg__typing { opacity: 1; }
-.msg.is-sent .msg__bubble { opacity: 1; scale: 1; }
-.convo__reply { display: flex; align-items: center; gap: 10px; padding: 12px 14px 12px 20px; border-top: 1px solid var(--line); background: var(--card); }
-.convo__input { flex: 1; padding: 12px 18px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--muted); font-size: 15px; transition: border-color .2s; }
-.convo__send { display: grid; place-items: center; flex: none; width: 46px; height: 46px; border-radius: 50%; background: var(--red); color: #fff; font-size: 20px;
-  transition: background .2s, transform .3s var(--ease); }
-.convo__reply:hover .convo__input { border-color: var(--ink); }
-.convo__reply:hover .convo__send { background: var(--ink); transform: rotate(-45deg); }
-@media (max-width: 560px) {
-  .convo { border-radius: 22px; box-shadow: 8px 8px 0 var(--yellow); }
-  .convo__handle { display: none; }
-  .convo__thread { padding: 20px 14px; }
-  .msg__bubble { max-width: 88%; font-size: 15px; }
-}
-
 /* ---------- About page ---------- */
 .about-photo { position: relative; margin: 0; width: 100%; max-width: 420px; justify-self: end; }
 .about-photo__frame { aspect-ratio: 4 / 5; max-width: 100%; border: 2px solid var(--ink); border-radius: 34px; background: var(--paper-2); box-shadow: 14px 14px 0 var(--yellow); overflow: hidden; }
@@ -634,5 +596,4 @@ a.contact-list__value:hover { color: var(--red-ink); }
   .reveal, .hero__name .ch > span { opacity: 1; transform: none; }
   .statement__text .w { opacity: 1; }
   .chat__msg .chat__bubble { transform: none; }
-  .msg__bubble { scale: 1; }
 }

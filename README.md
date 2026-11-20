@@ -19,7 +19,6 @@ Portfolio and blog for Ignatius Nirmal G.
 |------|-------|
 | All page text: the hero, the intro, the quick chat, About, links | `site/content.js` |
 | "The B-sides" (music, film, design, content, calisthenics, gym) | `passions` in `site/content.js`. Each has a `story` for the liner notes; add a `cover` image or a `link` (Spotify, YouTube, Instagram…) to any of them |
-| The quick chat on the home page | `chat` in `site/content.js`: `you` lines appear on the right, `me` lines on the left |
 | Social links (hero, contact, footer) | `socials` in `site/content.js` |
 | Blog posts | `site/blog/posts/` |
 | Images | `site/assets/` (blog images in `site/assets/blog/`) |

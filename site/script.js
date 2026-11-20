@@ -137,45 +137,6 @@
       .join("");
   }
 
-  /* Quick chat: the other things as a conversation, typed out when it scrolls into view. */
-  function convo(el) {
-    if (!el || !data.chat) return;
-    el.innerHTML = data.chat
-      .map((m) => {
-        const me = m.from !== "you";
-        return `
-        <li class="msg msg--${me ? "me" : "you"}">
-          ${me ? '<span class="msg__typing" aria-hidden="true"><i></i><i></i><i></i></span>' : ""}
-          <p class="msg__bubble">${esc(m.text)}</p>
-        </li>`;
-      })
-      .join("");
-    const msgs = $$(".msg", el);
-    const send = (m) => { m.classList.remove("is-typing"); m.classList.add("is-sent"); };
-    // A tap or click on the thread shows the whole chat at once.
-    el.addEventListener("click", () => msgs.forEach(send));
-    const play = () => {
-      if (reduceMotion) return msgs.forEach(send);
-      let t = 250;
-      msgs.forEach((m) => {
-        if (m.classList.contains("msg--me")) {
-          setTimeout(() => { if (!m.classList.contains("is-sent")) m.classList.add("is-typing"); }, t);
-          t += 700;
-        } else {
-          t += 400;
-        }
-        setTimeout(() => send(m), t);
-        t += 120;
-      });
-    };
-    const io = new IntersectionObserver((entries) => {
-      if (!entries.some((en) => en.isIntersecting)) return;
-      io.disconnect();
-      play();
-    }, { threshold: 0.3 });
-    io.observe(el);
-  }
-
   /* ---------- Home ---------- */
   function renderHome() {
     const nameEl = $("#heroName");
@@ -208,10 +169,8 @@
       })
       .join("");
     mountPhoto($(".portrait__frame"));
-    mountPhoto($("#convoAvatar"));
     albums($("#albums"));
     notes($("#notes"));
-    convo($("#convo"));
 
     const items = data.marquee.map((m) => `<span>${esc(m)} <i>✦</i></span>`).join("");
     $("#marquee").innerHTML = items + items;
