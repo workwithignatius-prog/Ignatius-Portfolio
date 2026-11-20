@@ -32,10 +32,11 @@ window.PORTFOLIO = {
   // "Let's talk" buttons open this link. Until it's set they open the contact page.
   calendlyUrl: "", // e.g. "https://calendly.com/itsigni/30min"
 
-  // Contact form. Create a free form at https://formspree.io and paste its endpoint,
-  // e.g. "https://formspree.io/f/abcdwxyz". If left empty, the form opens the
-  // visitor's email app with the message filled in instead.
-  formEndpoint: "",
+  // Contact form: every message is emailed to you through Web3Forms (free, 250 a month).
+  // Get a key at https://web3forms.com by entering the inbox that should receive the
+  // messages, then paste it here. The key is safe to publish: it never reveals your address.
+  // Until it's set, the form opens the visitor's email app with the message filled in.
+  formAccessKey: "",
   contactTopics: ["Just saying hi", "A collaboration", "Music", "An ad film or video", "Design", "Content", "Something else"],
 
   // "The B-sides": everything beyond the day job. Each one gets a generated album cover,

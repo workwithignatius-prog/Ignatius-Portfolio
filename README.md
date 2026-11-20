@@ -28,7 +28,7 @@ Portfolio and blog for Ignatius Nirmal G.
 Settings at the top of `site/content.js`:
 
 - `calendlyUrl` — where every "Let's talk" button goes. Until it's set, they open the contact page.
-- `formEndpoint` — a Formspree endpoint for the contact form. Until it's set, the form opens the visitor's email app.
+- `formAccessKey` — a free [Web3Forms](https://web3forms.com) access key. Each contact-form message is then emailed to the inbox you registered the key with. Until it's set, the form opens the visitor's email app.
 - `siteUrl` — change this if you connect your own domain (for example `https://www.itsigni.com`).
 
 ## Write a blog post

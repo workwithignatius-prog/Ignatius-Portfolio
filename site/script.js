@@ -431,27 +431,45 @@
       const entry = Object.fromEntries(new FormData(form));
       delete entry._gotcha;
 
-      if (!data.formEndpoint) {
+      if (!data.formAccessKey) {
         const body = `Name: ${entry.name}\nEmail: ${entry.email}\nLink: ${entry.link || "-"}\nAbout: ${entry.topic}\n\n${entry.message}`;
         location.href = `mailto:${data.email}?subject=${encodeURIComponent(`${entry.topic} — ${entry.name}`)}&body=${encodeURIComponent(body)}`;
         say(`Your email app should open with the message ready to send. If it doesn't, write to ${data.email}.`);
         return;
       }
 
+      // Web3Forms emails the message to the inbox the access key was created with.
+      const mail = {
+        access_key: data.formAccessKey,
+        subject: `New message from ${entry.name.trim()}: ${entry.topic}`,
+        from_name: `${data.handle} website`,
+        name: entry.name.trim(),
+        email: entry.email.trim(),
+      };
+      if (entry.link.trim()) mail["Website or social"] = entry.link.trim();
+      mail["Reaching out about"] = entry.topic;
+      mail.message = entry.message.trim();
+
       submit.disabled = true;
       say("Sending…");
+      const stop = new AbortController();
+      const timer = setTimeout(() => stop.abort(), 15000);
       try {
-        const res = await fetch(data.formEndpoint, {
+        const res = await fetch("https://api.web3forms.com/submit", {
           method: "POST",
           headers: { Accept: "application/json", "Content-Type": "application/json" },
-          body: JSON.stringify(entry),
+          body: JSON.stringify(mail),
+          signal: stop.signal,
         });
-        if (!res.ok) throw new Error(String(res.status));
+        const reply = await res.json().catch(() => ({}));
+        if (!res.ok || !reply.success) throw new Error(reply.message || `HTTP ${res.status}`);
         form.reset();
-        say("Thanks! Your message is on its way. I'll reply within two working days.", "ok");
+        say(`Sent! Thanks, ${mail.name.split(/\s+/)[0]}. I'll reply to ${mail.email} soon.`, "ok");
+        toast("✓ Message sent");
       } catch {
         say(`Your message couldn't be sent. Please try again, or email ${data.email}.`, "error");
       } finally {
+        clearTimeout(timer);
         submit.disabled = false;
       }
     });
