@@ -36,12 +36,12 @@ window.PORTFOLIO = {
     src: "assets/clips/hero-film.mp4",
     scenes: [
       { passion: 0, at: 2.2 }, // concert grand piano: front, three-quarter and the crowd
-      { passion: 1, at: 9.9 }, // directing an ad film: "Action!", the monitor, the camera
-      { passion: 2, at: 18.6 }, // painting the portrait as Leonardo da Vinci
-      { passion: 3, at: 22.4 }, // vlogging in Paris (with a drone shot), then Santorini
-      { passion: 4, at: 34.2 }, // pull-ups and a pistol squat at sunset
-      { passion: 5, at: 39.7 }, // dumbbell curls in the gym
-      { passion: -1, at: 43.4 }, // spinning back into the photo
+      { passion: 1, at: 9.9 }, // ad film set, in a bomber
+      { passion: 2, at: 14.3 }, // painting, then sketching, as Leonardo da Vinci
+      { passion: 3, at: 21.7 }, // vlogging in Paris, with a drone shot over the Seine
+      { passion: 4, at: 29.9 }, // pull-ups, a pistol squat and a handstand at sunset
+      { passion: 5, at: 39.6 }, // dumbbell curls in the gym
+      { passion: -1, at: 43.9 }, // spinning back into the photo
     ],
   },
 
