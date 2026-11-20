@@ -9,13 +9,11 @@
 
   const esc = (s = "") =>
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "item";
   const pad = (n) => String(n).padStart(2, "0");
   // The palette colour for item i, its shade for text on paper, and the text colour to put on top of it.
   const tone = (i) => `--c: var(--c${i % 6}); --ct: var(--c${i % 6}-t); --con: var(--c${i % 6}-on)`;
   const asset = (p) => (/^(https?:)?\/\//.test(p) ? p : root + String(p).replace(/^\//, ""));
   const social = (label) => (data.socials || []).find((s) => s.label.toLowerCase() === label.toLowerCase() && s.url);
-  const chips = (list) => `<ul class="chips">${list.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>`;
 
   const storage = {
     get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
@@ -23,16 +21,12 @@
   };
 
   const ICONS = {
-    star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>',
-    spark: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.1 7.9L22 12l-7.9 2.1L12 22l-2.1-7.9L2 12l7.9-2.1z"/></svg>',
-    pin: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 22s7-6.6 7-12.3A7 7 0 0 0 5 9.7C5 15.4 12 22 12 22zm0-9.3a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg>',
     music: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2.5" y="14" width="5" height="7" rx="2"/><rect x="16.5" y="14" width="5" height="7" rx="2"/></svg>',
     film: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="10" width="18" height="11" rx="2"/><path d="M3 10l2.6-5.5h14.9L19 10"/><path d="M9.5 4.5L7.5 10M15.2 4.5l-2 5.5"/></svg>',
     design: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l5 8-5 10-5-10z"/><circle cx="12" cy="11.5" r="1.6"/><path d="M12 13.1V21"/></svg>',
     content: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="M16 10.5l6-3.5v10l-6-3.5z"/></svg>',
     calisthenics: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v8.5M17 2v8.5"/><circle cx="7" cy="15" r="4.5"/><circle cx="17" cy="15" r="4.5"/></svg>',
     gym: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>',
-    medal: '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 1.5a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13zm0 3.2l1.2 2.5 2.7.3-2 1.9.5 2.7L12 10.8l-2.4 1.3.5-2.7-2-1.9 2.7-.3zM8.2 15.3L6.8 22.5 12 20l5.2 2.5-1.4-7.2A8.4 8.4 0 0 1 12 16.5a8.4 8.4 0 0 1-3.8-1.2z"/></svg>',
   };
 
   /* Adds the photo to a frame; keeps the monogram if the file is missing. */
@@ -84,21 +78,6 @@
     });
     const topic = $("#fTopic");
     if (topic) topic.innerHTML = data.contactTopics.map((o) => `<option>${esc(o)}</option>`).join("");
-    const resume = $("#resumeBtn");
-    if (resume && data.resumeUrl) Object.assign(resume, { href: asset(data.resumeUrl), hidden: false });
-  }
-
-  function numbers(el) {
-    if (!el) return;
-    el.innerHTML = data.stats
-      .map(
-        (n, i) => `
-        <li class="reveal" style="${tone(i)}">
-          <strong data-count="${Number(n.value) || 0}" data-prefix="${esc(n.prefix || "")}" data-suffix="${esc(n.suffix || "")}">${esc(n.prefix || "")}0${esc(n.suffix || "")}</strong>
-          <span>${esc(n.label)}</span>
-        </li>`
-      )
-      .join("");
   }
 
   /* "The B-sides": album sleeves with generated cover art and a record that slides out. */
@@ -139,25 +118,62 @@
     });
   }
 
-  function logoMark(x, cls) {
-    return x.logo
-      ? `<span class="${cls} ${cls}--logo"><img src="${esc(asset(x.logo))}" alt="${esc(x.company)} logo"></span>`
-      : `<span class="${cls}" aria-hidden="true">${esc(x.company.replace(/[^A-Za-z]/g, "").slice(0, 2).replace(/^./, (c) => c.toUpperCase()))}</span>`;
-  }
-
-  function awards(el) {
-    if (!el) return;
-    el.innerHTML = data.achievements
+  /* Liner notes: a line or two on each B-side, with its link when there is one. */
+  function notes(el) {
+    if (!el || !data.passions) return;
+    const verb = { music: "Listen", film: "Watch", content: "Follow" };
+    el.innerHTML = data.passions
       .map(
-        (a, i) => `
-        <article class="award glow reveal" style="${tone(i)}">
-          <span class="award__icon">${ICONS.star}</span>
-          <h3 class="award__title">${esc(a.title)}</h3>
-          <p class="award__org mono">${esc(a.org)}</p>
-          <p class="award__text">${esc(a.text)}</p>
-        </article>`
+        (p, i) => `
+        <li class="note reveal" style="${tone(i)}">
+          <span class="note__num">${pad(i + 1)}</span>
+          <h3 class="note__title">${esc(p.title)}<span class="note__tag">${esc(p.tagline)}</span></h3>
+          <div class="note__body">
+            <p class="note__story">${esc(p.story || p.tagline)}</p>
+            ${p.link ? `<a class="note__link" href="${esc(p.link)}" target="_blank" rel="noopener">${verb[p.art] || "See it"} <span aria-hidden="true">↗</span></a>` : ""}
+          </div>
+        </li>`
       )
       .join("");
+  }
+
+  /* Quick chat: the other things as a conversation, typed out when it scrolls into view. */
+  function convo(el) {
+    if (!el || !data.chat) return;
+    el.innerHTML = data.chat
+      .map((m) => {
+        const me = m.from !== "you";
+        return `
+        <li class="msg msg--${me ? "me" : "you"}">
+          ${me ? '<span class="msg__typing" aria-hidden="true"><i></i><i></i><i></i></span>' : ""}
+          <p class="msg__bubble">${esc(m.text)}</p>
+        </li>`;
+      })
+      .join("");
+    const msgs = $$(".msg", el);
+    const send = (m) => { m.classList.remove("is-typing"); m.classList.add("is-sent"); };
+    // A tap or click on the thread shows the whole chat at once.
+    el.addEventListener("click", () => msgs.forEach(send));
+    const play = () => {
+      if (reduceMotion) return msgs.forEach(send);
+      let t = 250;
+      msgs.forEach((m) => {
+        if (m.classList.contains("msg--me")) {
+          setTimeout(() => { if (!m.classList.contains("is-sent")) m.classList.add("is-typing"); }, t);
+          t += 700;
+        } else {
+          t += 400;
+        }
+        setTimeout(() => send(m), t);
+        t += 120;
+      });
+    };
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((en) => en.isIntersecting)) return;
+      io.disconnect();
+      play();
+    }, { threshold: 0.3 });
+    io.observe(el);
   }
 
   /* ---------- Home ---------- */
@@ -169,11 +185,14 @@
     nameEl.innerHTML = [...`${data.name}!`]
       .map((c, i) => `<span class="ch" style="--hc: var(--c${i % 6}); --n: ${i}"><span>${esc(c)}</span></span>`)
       .join("");
-    $("#heroBadge").textContent = data.heroBadge || data.role;
-    $("#heroRole").textContent = data.role;
+    $("#heroBadge").textContent = data.heroBadge || `a.k.a. ${data.handle}`;
+    $("#heroRole").textContent = `${data.role} by day,`;
     $("#heroTagline").textContent = data.tagline;
-    $("#heroNow").innerHTML = `Currently <b>${esc(data.current.role)}</b> at <b>${esc(data.current.company)}</b>`;
-    $("#heroCompanies").innerHTML = data.experience.map((x) => `<li>${esc(x.company)}</li>`).join("");
+    $("#heroNow").textContent = data.status || "";
+    $("#heroSocials").innerHTML = (data.socials || [])
+      .filter((s) => s.url)
+      .map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)} <span aria-hidden="true">↗</span></a></li>`)
+      .join("");
     // Passions as chat messages, alternating either side of the portrait from top to bottom.
     const passions = data.passions || [];
     $("#chat").innerHTML = passions
@@ -189,44 +208,14 @@
       })
       .join("");
     mountPhoto($(".portrait__frame"));
-    numbers($("#xpNumbers"));
+    mountPhoto($("#convoAvatar"));
     albums($("#albums"));
+    notes($("#notes"));
+    convo($("#convo"));
 
     const items = data.marquee.map((m) => `<span>${esc(m)} <i>✦</i></span>`).join("");
     $("#marquee").innerHTML = items + items;
     $("#statement").innerHTML = data.statement.split(/\s+/).map((w) => `<span class="w">${esc(w)}</span>`).join(" ");
-
-    $("#xpRows").innerHTML = data.experience
-      .map(
-        (x, i) => `
-        <li class="work reveal" style="${tone(i)}">
-          <button class="work__row" type="button" data-xp="${i}">
-            <span class="work__num">${pad(i + 1)}</span>
-            <span class="work__title">${esc(x.company)}<span class="work__summary">${esc(x.role)}</span></span>
-            <span class="work__cat">${esc(x.tags[0] || "")}</span>
-            <span class="work__year">${esc(x.period)}</span>
-            <span class="work__arrow" aria-hidden="true">→</span>
-          </button>
-        </li>`
-      )
-      .join("");
-    awards($("#awards"));
-
-    $("#servicesList").innerHTML = data.services
-      .map(
-        (s, i) => `
-        <article class="service reveal" style="${tone(i)}">
-          <span class="service__num mono">${pad(i + 1)}</span>
-          <h3>${esc(s.title)}</h3>
-          <p>${esc(s.detail)}</p>
-          ${chips(s.tags)}
-        </article>`
-      )
-      .join("");
-
-    $("#processList").innerHTML = data.process
-      .map((p, i) => `<li class="reveal" style="${tone(i)}"><h3>${esc(p.step)}</h3><p>${esc(p.detail)}</p></li>`)
-      .join("");
   }
 
   /* Fit "Ignatius!" to the full width. */
@@ -241,69 +230,6 @@
     el.style.fontSize = `${Math.floor((100 * box * 0.995) / natural)}px`;
   }
 
-  function initModal() {
-    const modal = $("#modal");
-    const rows = $("#xpRows");
-    if (!modal || !rows) return;
-    rows.addEventListener("click", (e) => {
-      const row = e.target.closest("[data-xp]");
-      if (!row) return;
-      const x = data.experience[row.dataset.xp];
-      $("#modalFile").textContent = `${slug(x.company)}.experience`;
-      $("#modalBody").innerHTML = `
-        <p class="label">${esc(x.period)}</p>
-        <h3 id="modalTitle">${esc(x.company)}</h3>
-        <p class="modal__role">${esc(x.role)}</p>
-        <div class="modal__facts">
-          <span>Period<b>${esc(x.period)}</b></span>
-          <span>Location<b>${esc(x.location)}</b></span>
-          ${x.award ? `<span>Highlight<b>${esc(x.award)}</b></span>` : ""}
-        </div>
-        <p class="modal__summary">${esc(x.summary)}</p>
-        <h4>What I did</h4>
-        <ul class="checklist">${x.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
-        ${chips(x.tags)}
-        <a class="btn btn--primary" href="${root}experience.html#xp-${slug(x.company)}">Open on the experience page <span aria-hidden="true">→</span></a>`;
-      $("#preview")?.classList.remove("is-visible");
-      document.documentElement.classList.add("cursor-off");
-      modal.showModal();
-    });
-    modal.addEventListener("close", () => document.documentElement.classList.remove("cursor-off"));
-    $("#modalClose").addEventListener("click", () => modal.close());
-    modal.addEventListener("click", (e) => { if (e.target === modal) modal.close(); });
-  }
-
-  /* ---------- Experience page ---------- */
-  function renderExperiencePage() {
-    const list = $("#xpTimeline");
-    if (!list) return;
-    numbers($("#xpNumbers"));
-    list.innerHTML = data.experience
-      .map((x, i) => {
-        return `
-        <li class="xp__item glow reveal" id="xp-${slug(x.company)}" style="${tone(i)}">
-          <div class="xp__side">
-            ${logoMark(x, "xp__mark")}
-            <p class="xp__period mono">${esc(x.period)}</p>
-            <p class="xp__company">${esc(x.company)}</p>
-            <p class="xp__location">${esc(x.location)}</p>
-          </div>
-          <div class="xp__main">
-            <h2 class="xp__role">${esc(x.role)}</h2>
-            <p class="xp__summary">${esc(x.summary)}</p>
-            <ul class="checklist">${x.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>
-            <div class="xp__foot">
-              ${chips(x.tags)}
-              ${x.award ? `<p class="xp__award"><span class="xp__award-icon">${ICONS.star}</span>${esc(x.award)}</p>` : ""}
-            </div>
-          </div>
-        </li>`;
-      })
-      .join("");
-    awards($("#awards"));
-    if (location.hash) requestAnimationFrame(() => document.getElementById(location.hash.slice(1))?.scrollIntoView());
-  }
-
   /* ---------- About page ---------- */
   function renderAboutPage() {
     const text = $("#aboutText");
@@ -314,21 +240,7 @@
     $("#facts").innerHTML = data.about.facts
       .map((f, i) => `<li class="fact glow reveal" style="${tone(i)}"><span class="mono">${esc(f.label)}</span><b>${esc(f.value)}</b></li>`)
       .join("");
-    $("#toolboxGrid").innerHTML = data.toolbox
-      .map((g, i) => `<article class="tool-group glow reveal" style="${tone(i)}"><h3 class="tool-group__title mono">${esc(g.group)}</h3>${chips(g.items)}</article>`)
-      .join("");
     albums($("#albums"));
-    $("#competencyCloud").innerHTML = data.competencies.map((c, i) => `<li style="${tone(i)}">${esc(c)}</li>`).join("");
-    $("#certs").innerHTML = data.certifications
-      .map(
-        (c, i) => `
-        <li class="cert glow reveal" style="${tone(i)}">
-          <span class="cert__icon">${ICONS.medal}</span>
-          <p class="cert__name">${esc(c.name)}</p>
-          <p class="cert__issuer mono">${esc(c.issuer)}</p>
-        </li>`
-      )
-      .join("");
   }
 
   /* ---------- Blog ---------- */
@@ -439,7 +351,7 @@
       delete entry._gotcha;
 
       if (!data.formEndpoint) {
-        const body = `Name: ${entry.name}\nEmail: ${entry.email}\nCompany: ${entry.company || "-"}\nAbout: ${entry.topic}\n\n${entry.message}`;
+        const body = `Name: ${entry.name}\nEmail: ${entry.email}\nLink: ${entry.link || "-"}\nAbout: ${entry.topic}\n\n${entry.message}`;
         location.href = `mailto:${data.email}?subject=${encodeURIComponent(`${entry.topic} — ${entry.name}`)}&body=${encodeURIComponent(body)}`;
         say(`Your email app should open with the message ready to send. If it doesn't, write to ${data.email}.`);
         return;
@@ -483,20 +395,6 @@
     tick();
   }
 
-  function countUp(el) {
-    const target = Number(el.dataset.count);
-    const { prefix = "", suffix = "" } = el.dataset;
-    if (reduceMotion || !target) { el.textContent = prefix + target + suffix; return; }
-    const start = performance.now();
-    const dur = 1400;
-    const step = (t) => {
-      const k = Math.min(1, (t - start) / dur);
-      el.textContent = prefix + Math.round(target * (1 - Math.pow(1 - k, 3))) + suffix;
-      if (k < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }
-
   function initReveal() {
     const io = new IntersectionObserver((entries) => {
       entries.forEach((en) => {
@@ -504,7 +402,6 @@
         const el = en.target;
         el.classList.add("is-in");
         if (el.matches("[data-scramble]")) scramble(el);
-        $$("[data-count]", el).forEach(countUp);
         io.unobserve(el);
       });
     }, { threshold: 0.12 });
@@ -513,7 +410,6 @@
       el.style.setProperty("--rd", `${Math.min(siblings.indexOf(el), 5) * 80}ms`);
       io.observe(el);
     });
-    $$("[data-count]").filter((el) => !el.closest(".reveal")).forEach(countUp);
   }
 
   function initStatement() {
@@ -530,15 +426,9 @@
     update();
   }
 
-  /* ---------- Hover effects: tilt, parallax, magnetic buttons, logo preview ---------- */
+  /* ---------- Hover effects: tilt, parallax, magnetic buttons ---------- */
   function initPointerFx() {
     if (!finePointer || reduceMotion) return;
-
-    let x = innerWidth / 2, y = innerHeight / 3;
-    addEventListener("pointermove", (e) => {
-      x = e.clientX;
-      y = e.clientY;
-    }, { passive: true });
 
     // The portrait leans towards the pointer.
     $$(".tilt").forEach((el) => {
@@ -571,38 +461,6 @@
       });
       btn.addEventListener("pointerleave", () => (btn.style.transform = ""));
     });
-
-    // Experience rows: a card follows the pointer.
-    const preview = $("#preview");
-    const rows = $("#xpRows");
-    let px = x, py = y;
-    if (preview && rows) {
-      rows.addEventListener("pointerover", (e) => {
-        const row = e.target.closest("[data-xp]");
-        if (!row) return;
-        const i = Number(row.dataset.xp);
-        const xp = data.experience[i];
-        if (preview.dataset.xp === String(i) && preview.classList.contains("is-visible")) return;
-        preview.dataset.xp = String(i);
-        preview.style.setProperty("--c", `var(--c${i % 6})`);
-        preview.style.setProperty("--ct", `var(--c${i % 6}-t)`);
-        preview.innerHTML = `
-          <span class="preview__logo">${xp.logo ? `<img src="${esc(asset(xp.logo))}" alt="">` : `<span class="preview__word">${esc(xp.company)}</span>`}</span>
-          <span class="preview__meta"><b>${esc(xp.company)}</b><span class="mono">${esc(xp.period)}</span></span>`;
-        preview.classList.remove("is-visible");
-        void preview.offsetWidth; // restart the pop-in for each company
-        preview.classList.add("is-visible");
-      });
-      rows.addEventListener("pointerleave", () => { preview.classList.remove("is-visible"); delete preview.dataset.xp; });
-    }
-
-    if (!preview) return;
-    (function loop() {
-      px += (x - px) * 0.14;
-      py += (y - py) * 0.14;
-      preview.style.transform = `translate(${px + 72}px, ${py - 110}px) rotate(${(x - px) * 0.05}deg)`;
-      requestAnimationFrame(loop);
-    })();
   }
 
   /* ---------- Custom cursor: a chat-bubble pin that swings as it moves and says what a click does ---------- */
@@ -622,7 +480,7 @@
       if (!t || !t.closest) return;
       cursor.classList.toggle("is-hidden", !!t.closest("input, textarea, select"));
       cursor.classList.toggle("is-dark", !!t.closest("[data-dark]"));
-      const labelled = t.closest("[data-cursor], .work__row");
+      const labelled = t.closest("[data-cursor]");
       const text = labelled ? labelled.dataset.cursor || "View" : "";
       if (text && text !== label.textContent) {
         label.textContent = text;
@@ -777,13 +635,11 @@
 
   renderCommon();
   renderHome();
-  renderExperiencePage();
   renderAboutPage();
   fitName();
   addEventListener("resize", fitName);
   if (document.fonts) document.fonts.ready.then(fitName);
   initClock();
-  initModal();
   initBlogFilter();
   initNav();
   initCopy();

@@ -36,13 +36,13 @@
         </label>
         <label class="field">
           <span>Email</span>
-          <input id="fEmail" name="email" type="email" autocomplete="email" required placeholder="jane@company.com">
+          <input id="fEmail" name="email" type="email" autocomplete="email" required placeholder="you@email.com">
         </label>
       </div>
       <div class="form__row">
         <label class="field">
-          <span>Company <em>(optional)</em></span>
-          <input id="fCompany" name="company" type="text" autocomplete="organization" placeholder="Acme Inc.">
+          <span>Website or social <em>(optional)</em></span>
+          <input id="fLink" name="link" type="text" autocomplete="url" placeholder="instagram.com/you">
         </label>
         <label class="field">
           <span>I'm reaching out about</span>
@@ -51,11 +51,11 @@
       </div>
       <label class="field">
         <span>Message</span>
-        <textarea id="fMessage" name="message" rows="5" required placeholder="What are you working on, and how can I help?"></textarea>
+        <textarea id="fMessage" name="message" rows="5" required placeholder="What's on your mind?"></textarea>
       </label>
       <input class="form__trap" type="text" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true">
       <div class="form__foot">
-        <button class="btn btn--primary btn--glow" id="formSubmit" type="submit">Send message <span aria-hidden="true">→</span></button>
+        <button class="btn btn--primary" id="formSubmit" type="submit">Send message <span aria-hidden="true">→</span></button>
         <p class="form__status" id="formStatus" role="status" aria-live="polite"></p>
       </div>
     </form>

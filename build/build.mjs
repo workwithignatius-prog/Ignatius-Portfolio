@@ -131,9 +131,9 @@ function baseVars(rel, root) {
     location: data.location,
     email: data.email,
     contactLabel: "Contact",
-    contactTitle: "Let's work together",
+    contactTitle: "Let's make something",
     contactLead:
-      "Whether it's a deal to win, a solution to design or a role to fill, I'd love to hear about it. I usually reply within two working days.",
+      "A beat, a film, a design, a collab or just a hello: I'd love to hear about it. I usually reply within two working days.",
     devBadge: DEV ? `<p class="dev-badge mono">Dev preview · drafts visible · not live</p>` : "",
   };
 }
@@ -349,7 +349,7 @@ function renderFeed(posts) {
   <channel>
     <title>${esc(data.fullName)} — Blog</title>
     <link>${SITE_URL}/blog/</link>
-    <description>${esc(data.blogDescription || "Writing on presales, solution engineering, SaaS and AI.")}</description>
+    <description>${esc(data.blogDescription || "Notes on music, films, design, training and whatever else I'm into.")}</description>
     <language>en</language>${items}
   </channel>
 </rss>

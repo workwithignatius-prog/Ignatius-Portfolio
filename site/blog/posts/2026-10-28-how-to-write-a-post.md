@@ -14,11 +14,11 @@ Every post begins with a few lines between two `---` markers:
 
 ```
 ---
-title: What I learned from 100 product demos
+title: Behind my latest beat
 date: 2026-11-02
 excerpt: One or two sentences shown on the blog cards.
-tags: [Presales, Demos]
-cover: /assets/blog/100-demos.jpg
+tags: [Music, Process]
+cover: /assets/blog/latest-beat.jpg
 draft: true
 ---
 ```
