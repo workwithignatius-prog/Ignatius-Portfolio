@@ -36,7 +36,7 @@ Settings at the top of `site/content.js`:
 
 - `calendlyUrl` — where every "Let's talk" button goes. Until it's set, they open the contact page.
 - `formAccessKey` — a free [Web3Forms](https://web3forms.com) access key. Each contact-form message is then emailed to the inbox you registered the key with. Until it's set, the form opens the visitor's email app.
-- `siteUrl` — the site's address, `https://www.itsigni.com`. It's used for link previews, the RSS feed and the sitemap, and must match the custom domain in GitHub (see below).
+- `siteUrl` — the site's address, `https://www.itsigni.com`. It's used for link previews, the RSS feed and the sitemap, and must match the custom domain in GitHub (see **Domain** above).
 
 ## Write a blog post
 
