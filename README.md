@@ -6,8 +6,8 @@ Portfolio and blog for Ignatius Nirmal G.
 
 | Branch | Environment | Address |
 |--------|-------------|---------|
-| `main` | Development preview (drafts visible, hidden from search engines) | https://www.itsigni.com/dev/ |
-| `Prod` | Production, the live site | https://www.itsigni.com/ |
+| `main` | Development preview (drafts visible, hidden from search engines) | https://itsigni.com/dev/ |
+| `Prod` | Production, the live site | https://itsigni.com/ |
 
 1. Make changes on `main`. The dev preview updates a minute or two after each push.
 2. When it's ready to go live, open a pull request from `main` into `Prod` and merge it.
@@ -15,10 +15,10 @@ Portfolio and blog for Ignatius Nirmal G.
 
 ## Domain
 
-The site lives at **www.itsigni.com**; itsigni.com and the old github.io address forward there.
+The site lives at **itsigni.com**; www.itsigni.com and the old github.io address forward there.
 
 - **Cloudflare** (DNS for itsigni.com): `itsigni.com` and `www` are CNAME records pointing to `workwithignatius-prog.github.io`, with the proxy off (**DNS only**). The MX and TXT records are for email; leave them alone.
-- **GitHub** (this repository's **Settings → Pages**): **Source** is **GitHub Actions**, **Custom domain** is `www.itsigni.com`, and **Enforce HTTPS** is ticked. Don't switch the source to "Deploy from a branch": that publishes the raw repository instead of the built site.
+- **GitHub** (this repository's **Settings → Pages**): **Source** is **GitHub Actions**, **Custom domain** is `itsigni.com`, and **Enforce HTTPS** is ticked. Don't switch the source to "Deploy from a branch": that publishes the raw repository instead of the built site.
 
 ## Where things live
 
@@ -36,7 +36,7 @@ Settings at the top of `site/content.js`:
 
 - `calendlyUrl` — where every "Let's talk" button goes. Until it's set, they open the contact page.
 - `formAccessKey` — a free [Web3Forms](https://web3forms.com) access key. Each contact-form message is then emailed to the inbox you registered the key with. Until it's set, the form opens the visitor's email app.
-- `siteUrl` — the site's address, `https://www.itsigni.com`. It's used for link previews, the RSS feed and the sitemap, and must match the custom domain in GitHub (see **Domain** above).
+- `siteUrl` — the site's address, `https://itsigni.com`. It's used for link previews, the RSS feed and the sitemap, and must match the custom domain in GitHub (see **Domain** above).
 
 ## Write a blog post
 

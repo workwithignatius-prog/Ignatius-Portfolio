@@ -25,7 +25,7 @@ window.PORTFOLIO = {
 
   // The live address of the site, used in share links, the RSS feed and the sitemap.
   // It must match the custom domain in GitHub (Settings -> Pages); change both together.
-  siteUrl: "https://www.itsigni.com",
+  siteUrl: "https://itsigni.com",
 
   photo: "assets/me.jpg",
 
