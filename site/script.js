@@ -189,6 +189,40 @@
     el.style.fontSize = `${Math.floor((100 * box * 0.995) / natural)}px`;
   }
 
+  /* Two-column hero: tuck the portrait just under the name, centred on the gap between its last two
+     letters (the U and the S), and small enough to fit on the first screen. Stacked layouts keep it centred. */
+  function placePhoto() {
+    const photo = $(".hero__photo");
+    const chars = $$("#heroName .ch");
+    if (!photo || chars.length < 3) return;
+    const visual = photo.parentElement;
+    visual.style.marginTop = photo.style.width = photo.style.translate = "";
+    if (matchMedia("(max-width: 900px)").matches) return;
+
+    const nameBottom = $("#heroName").getBoundingClientRect().bottom + scrollY;
+    const top = nameBottom + 22;
+    const natural = photo.getBoundingClientRect();
+    const fit = (innerHeight - top - 24) * (natural.width / natural.height);
+    if (fit < natural.width) photo.style.width = `${Math.max(260, fit)}px`;
+    const box = photo.getBoundingClientRect();
+    visual.style.marginTop = `${top - (box.top + scrollY)}px`;
+
+    // How far the bubbles on each side reach past the photo once their text is showing.
+    const chat = $("#chat");
+    const overlap = (parseFloat(getComputedStyle(chat).getPropertyValue("--overlap")) || 0) / 100;
+    const reach = (side) => Math.max(0, ...$$(`.chat__msg:nth-child(${side})`, chat).map((m) => {
+      const cs = getComputedStyle($(".chat__bubble", m));
+      return $(".chat__body > span", m).scrollWidth + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) - overlap * box.width;
+    }));
+    const a = chars[chars.length - 3].getBoundingClientRect();
+    const b = chars[chars.length - 2].getBoundingClientRect();
+    const want = (a.right + b.left) / 2 - (box.left + box.width / 2);
+    const room = 24; // edge margin, including the bubbles' 9px parallax drift
+    const most = document.documentElement.clientWidth - room - (box.right + reach("even"));
+    const least = $(".hero__intro").getBoundingClientRect().right + room - (box.left - reach("odd"));
+    photo.style.translate = `${Math.round(Math.max(least, Math.min(want, most)))}px 0`;
+  }
+
   /* ---------- About page ---------- */
   function renderAboutPage() {
     const text = $("#aboutText");
@@ -595,9 +629,10 @@
   renderCommon();
   renderHome();
   renderAboutPage();
-  fitName();
-  addEventListener("resize", fitName);
-  if (document.fonts) document.fonts.ready.then(fitName);
+  const layoutHero = () => { fitName(); placePhoto(); };
+  layoutHero();
+  addEventListener("resize", layoutHero);
+  if (document.fonts) document.fonts.ready.then(layoutHero);
   initClock();
   initBlogFilter();
   initNav();
