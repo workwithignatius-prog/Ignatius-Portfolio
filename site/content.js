@@ -24,8 +24,8 @@ window.PORTFOLIO = {
   email: "hello@itsigni.com",
 
   // The live address of the site, used in share links, the RSS feed and the sitemap.
-  // Change it when you connect your own domain, e.g. "https://www.itsigni.com".
-  siteUrl: "https://workwithignatius-prog.github.io/Ignatius-Portfolio",
+  // It must match the custom domain in GitHub (Settings -> Pages); change both together.
+  siteUrl: "https://itsigni.com",
 
   photo: "assets/me.jpg",
 
