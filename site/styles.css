@@ -273,9 +273,11 @@ h1, h2, h3 { text-wrap: balance; }
 .portrait__frame img { object-fit: cover; transition: transform 1.2s var(--ease); }
 .portrait:hover .portrait__frame img { transform: scale(1.04); }
 .portrait__fallback { display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 84px; color: var(--paper); background: var(--ink); }
-/* The animated clip of a passion fades in over the photo */
-.portrait__clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%;
-  opacity: 0; transition: opacity .35s var(--ease); pointer-events: none; }
+/* The hero film fades in over the photo. It zooms with the photo on hover, so the two always line up
+   and the film starts and ends exactly on the photo, even when it is replayed by clicking the portrait. */
+.portrait__clip { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  opacity: 0; transition: opacity .35s var(--ease), transform 1.2s var(--ease); pointer-events: none; }
+.portrait:hover .portrait__clip { transform: scale(1.04); }
 .portrait__clip.is-on { opacity: 1; }
 
 /* Passions arrive as chat messages beside the portrait: typing dots first, then the text */
