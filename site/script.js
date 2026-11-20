@@ -635,12 +635,12 @@
     const msgs = $$(".chat__msg", chat);
     const words = $$(".hero__word");
     // Pointing at a passion, as a word in the statement or as a bubble, nudges its bubble,
-    // lights up its word and plays its clip in the portrait.
+    // lights up its word and jumps the portrait film to its scene.
     const mark = (i) => {
       msgs.forEach((m, j) => m.classList.toggle("is-hinted", j === i));
       words.forEach((w) => w.classList.toggle("is-on", Number(w.dataset.album) === i));
     };
-    const clips = initClips(mark);
+    const clips = initFilm(mark);
     let touched = false;
     // Only a passion itself takes over from the tour; passing over the rest of the text doesn't.
     const pick = (e) => {
@@ -667,96 +667,97 @@
         setTimeout(() => m.classList.add("is-typing"), 300 + i * 550);
         setTimeout(() => m.classList.add("is-sent"), 1000 + i * 550);
       });
-      // Once the bubbles are in, the portrait acts out each passion in turn, unless the visitor got there first.
+      // Once the bubbles are in, the portrait plays the film, unless the visitor got there first.
       setTimeout(() => { if (!touched) clips.tour(); }, 2200 + msgs.length * 550);
     };
   }
 
-  /* Short silent clips of me at each passion (`clip` in content.js), played inside the portrait.
-     Nothing loads until a clip is needed; reduced motion keeps the photo. */
-  function initClips(mark) {
+  /* The hero film (`heroFilm` in content.js) plays inside the portrait. It starts and ends on the
+     photo, so it slips in and out of it: once after the bubbles arrive, again when the portrait is
+     clicked, and from a passion's scene while that passion is pointed at. Nothing loads until it's
+     needed; reduced motion and data saver keep the photo. */
+  function initFilm(mark) {
     const frame = $(".portrait__frame");
-    const files = (data.passions || []).map((p) => p.clip || "");
-    if (!frame || reduceMotion || !files.some(Boolean)) return { show: mark, tour() {}, stop() {}, touring: false };
-    const videos = [];
-    let current = -1;
+    const film = data.heroFilm;
+    if (!frame || reduceMotion || !film || !film.src || !(film.scenes || []).length) {
+      return { show: mark, tour() {}, stop() {}, touring: false };
+    }
+    const scenes = film.scenes.slice().sort((a, b) => a.at - b.at);
+    const sceneAt = (t) => scenes.reduce((p, s) => (t >= s.at ? s.passion : p), -1);
+    let v = null;
+    let on = false;
     let touring = false;
     let visible = true;
-    let timer = 0;
 
-    const video = (i) => {
-      if (!videos[i]) {
-        const v = document.createElement("video");
-        v.className = "portrait__clip";
-        v.muted = v.defaultMuted = true;
-        v.playsInline = true;
-        v.loop = true;
-        v.preload = "auto";
-        v.setAttribute("muted", "");
-        v.setAttribute("playsinline", "");
-        v.setAttribute("aria-hidden", "true");
-        v.addEventListener("playing", () => v.classList.toggle("is-on", current === i));
-        v.src = asset(files[i]);
-        frame.appendChild(v);
-        videos[i] = v;
-      }
-      return videos[i];
+    const video = () => {
+      if (v) return v;
+      v = document.createElement("video");
+      v.className = "portrait__clip";
+      v.muted = v.defaultMuted = true;
+      v.playsInline = true;
+      v.preload = "auto";
+      v.setAttribute("muted", "");
+      v.setAttribute("playsinline", "");
+      v.setAttribute("aria-hidden", "true");
+      v.addEventListener("playing", () => { if (on) v.classList.add("is-on"); });
+      v.addEventListener("timeupdate", () => { if (on) mark(sceneAt(v.currentTime)); });
+      v.addEventListener("ended", () => hide());
+      v.src = asset(film.src);
+      frame.appendChild(v);
+      return v;
+    };
+
+    const play = (from) => {
+      const el = video();
+      on = true;
+      const go = () => {
+        // play() first: on a film that has ended it rewinds to the start, so seek after it.
+        if (visible) el.play().catch(() => {});
+        el.currentTime = from;
+      };
+      if (el.readyState >= 1) go();
+      else el.addEventListener("loadedmetadata", go, { once: true });
+      if (!el.paused) el.classList.add("is-on"); // still fading out: bring it straight back
+    };
+
+    const hide = () => {
+      on = false;
+      touring = false;
+      mark(-1);
+      if (!v) return;
+      v.classList.remove("is-on");
+      setTimeout(() => { if (!on) v.pause(); }, 400);
     };
 
     const show = (i) => {
+      const scene = scenes.find((s) => s.passion === i);
+      if (i < 0 || !scene) { if (on) hide(); return mark(i); } // no scene of its own: the photo stays
       mark(i);
-      const next = files[i] ? i : -1;
-      if (next === current) return;
-      current = next;
-      videos.forEach((v, j) => {
-        if (!v || j === next) return;
-        v.classList.remove("is-on");
-        setTimeout(() => { if (current !== j) v.pause(); }, 400);
-      });
-      if (next < 0) return;
-      const v = video(next);
-      if (!v.paused) return v.classList.add("is-on"); // still fading out: bring it straight back
-      v.currentTime = 0;
-      if (visible) v.play().catch(() => {});
+      if (on && v && !v.paused && sceneAt(v.currentTime) === i) return; // already there
+      play(scene.at);
     };
 
-    const stop = () => {
-      if (!touring) return;
-      touring = false;
-      clearTimeout(timer);
-      videos.forEach((v) => { if (v) v.loop = true; });
-    };
+    const stop = () => { touring = false; };
 
-    // One pass through every clip, then back to the photo.
     const tour = () => {
       if (!visible || navigator.connection?.saveData) return;
-      const order = files.map((f, i) => (f ? i : -1)).filter((i) => i >= 0);
       touring = true;
-      const step = () => {
-        clearTimeout(timer);
-        if (!touring) return;
-        const i = order.shift();
-        if (i === undefined) { touring = false; show(-1); return; }
-        show(i);
-        if (order.length) video(order[0]); // fetch the next clip while this one plays
-        const v = video(i);
-        const done = () => {
-          v.removeEventListener("ended", done);
-          v.loop = true;
-          step();
-        };
-        v.loop = false;
-        v.addEventListener("ended", done);
-        timer = setTimeout(done, 9000); // in case a clip never loads
-      };
-      step();
+      play(0);
     };
 
-    // Clips rest while the hero is off screen.
+    // Clicking the portrait plays the whole film again.
+    const portrait = frame.closest(".portrait");
+    if (portrait) {
+      portrait.dataset.cursor = "Play";
+      portrait.addEventListener("click", () => { touring = true; play(0); });
+    }
+
+    // The film rests while the hero is off screen.
     new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
-      const v = videos[current];
-      if (!visible) { stop(); v?.pause(); } else v?.play().catch(() => {});
+      if (!v || !on) return;
+      if (visible) v.play().catch(() => {});
+      else v.pause();
     }).observe(frame);
 
     return { show, tour, stop, get touring() { return touring; } };

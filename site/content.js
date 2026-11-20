@@ -29,6 +29,21 @@ window.PORTFOLIO = {
 
   photo: "assets/me.jpg",
 
+  // A short silent film that plays inside the hero portrait. It starts and ends on the photo
+  // and spins through each passion. `scenes` gives the second at which each passion (its place
+  // in `passions` below, from 0) takes over, so its word and bubble light up with it; -1 is the photo.
+  heroFilm: {
+    src: "assets/clips/hero-film.mp4",
+    scenes: [
+      { passion: 0, at: 4 }, // keyboard
+      { passion: 1, at: 10 }, // ad film set
+      { passion: 2, at: 15.9 }, // da Vinci at the easel
+      { passion: 3, at: 22.1 }, // vlogging
+      { passion: 4, at: 28.1 }, // pull-ups
+      { passion: -1, at: 32.4 }, // spinning back into the photo
+    ],
+  },
+
   // "Let's talk" buttons open this link. Until it's set they open the contact page.
   calendlyUrl: "", // e.g. "https://calendly.com/itsigni/30min"
 
@@ -43,38 +58,37 @@ window.PORTFOLIO = {
   // a chat bubble in the hero, a line in the liner notes and, if its `word` appears in the
   // headline, a coloured underline there.
   // art: music, film, design, content, calisthenics or gym. Optional: cover (an image
-  // path, e.g. "assets/b-sides/music.jpg"), link (Spotify, YouTube, Instagram…) and clip
-  // (a short silent looping video that plays in the hero portrait, e.g. "assets/clips/music.mp4").
+  // path, e.g. "assets/b-sides/music.jpg") and link (Spotify, YouTube, Instagram…).
   passions: [
     {
       title: "Music Producer",
       tagline: "Beats, mixes and sound design",
       story: "I make beats, mix tracks and design sounds, building each track from the first loop to the final mix.",
-      art: "music", word: "music", cover: "", link: "", clip: "assets/clips/music.mp4",
+      art: "music", word: "music", cover: "", link: "",
     },
     {
       title: "Ad Film Maker",
       tagline: "From concept to the final cut",
       story: "I make ad films: the idea, the script, the shoot and the edit, all the way to the final cut.",
-      art: "film", word: "films", cover: "", link: "", clip: "assets/clips/films.mp4",
+      art: "film", word: "films", cover: "", link: "",
     },
     {
       title: "Designer",
       tagline: "Brands, visuals and layouts",
       story: "I design brands, visuals and layouts, from logos to posts for the feed.",
-      art: "design", word: "designs", cover: "", link: "", clip: "assets/clips/designs.mp4",
+      art: "design", word: "designs", cover: "", link: "",
     },
     {
       title: "Content Creator",
       tagline: "Stories for the feed",
       story: "I create content and share the stories behind everything else on this page.",
-      art: "content", word: "content", cover: "", link: "", clip: "assets/clips/content.mp4",
+      art: "content", word: "content", cover: "", link: "",
     },
     {
       title: "Calisthenics",
       tagline: "Bodyweight strength and skills",
       story: "Bodyweight strength and skills, trained on the bars and the floor.",
-      art: "calisthenics", word: "train", cover: "", link: "", clip: "assets/clips/train.mp4",
+      art: "calisthenics", word: "train", cover: "", link: "",
     },
     {
       title: "Gym",
