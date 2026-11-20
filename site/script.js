@@ -137,6 +137,23 @@
       .join("");
   }
 
+  /* The hero's big line: each passion's word is underlined in its colour and links to its record. */
+  function statement(el) {
+    if (!el || !data.headline) return;
+    const words = new Map();
+    (data.passions || []).forEach((p, i) => {
+      if (p.word && !words.has(p.word.toLowerCase())) words.set(p.word.toLowerCase(), i);
+    });
+    const used = new Set();
+    const pattern = [...words.keys()].map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+    el.innerHTML = !pattern ? esc(data.headline) : esc(data.headline).replace(new RegExp(`\\b(${pattern})\\b`, "gi"), (w) => {
+      const i = words.get(w.toLowerCase());
+      if (used.has(i)) return w;
+      used.add(i);
+      return `<a class="hero__word" href="#b-sides" data-album="${i}" data-cursor="Play" style="${tone(i)}">${w}</a>`;
+    });
+  }
+
   /* ---------- Home ---------- */
   function renderHome() {
     const nameEl = $("#heroName");
@@ -147,9 +164,8 @@
       .map((c, i) => `<span class="ch" style="--hc: var(--c${i % 6}); --n: ${i}"><span>${esc(c)}</span></span>`)
       .join("");
     $("#heroBadge").textContent = data.heroBadge || `a.k.a. ${data.handle}`;
-    $("#heroRole").textContent = `${data.role} by day,`;
-    $("#heroTagline").textContent = data.tagline;
-    $("#heroNow").textContent = data.status || "";
+    statement($("#heroStatement"));
+    $("#heroDay").textContent = `By day, I'm a ${data.role}.`;
     $("#heroSocials").innerHTML = (data.socials || [])
       .filter((s) => s.url)
       .map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)} <span aria-hidden="true">↗</span></a></li>`)
@@ -174,7 +190,15 @@
 
     const items = data.marquee.map((m) => `<span>${esc(m)} <i>✦</i></span>`).join("");
     $("#marquee").innerHTML = items + items;
-    $("#statement").innerHTML = data.statement.split(/\s+/).map((w) => `<span class="w">${esc(w)}</span>`).join(" ");
+    // Words wrapped in *stars* are coloured.
+    let key = false;
+    $("#statement").innerHTML = data.statement.split(/\s+/).map((w) => {
+      if (w.startsWith("*")) { key = true; w = w.slice(1); }
+      const ends = /\*\W*$/.test(w);
+      const html = `<span class="w${key ? " w--key" : ""}">${esc(w.replace(/\*(?=\W*$)/, ""))}</span>`;
+      if (ends) key = false;
+      return html;
+    }).join(" ");
   }
 
   /* Fit "Ignatius!" to the full width. */
@@ -527,8 +551,13 @@
     const chat = $("#chat");
     if (!chat) return () => {};
     const msgs = $$(".chat__msg", chat);
-    // A bubble jumps to its record in the B-sides and puts it on.
-    chat.addEventListener("click", (e) => {
+    // Hovering a passion word in the statement nudges its bubble.
+    const words = $("#heroStatement");
+    const hint = (word) => msgs.forEach((m, i) => m.classList.toggle("is-hinted", !!word && i === Number(word.dataset.album)));
+    words?.addEventListener("pointerover", (e) => hint(e.target.closest(".hero__word")));
+    words?.addEventListener("pointerleave", () => hint(null));
+    // A bubble or a passion word jumps to its record in the B-sides and puts it on.
+    $("[data-hero]").addEventListener("click", (e) => {
       const link = e.target.closest("[data-album]");
       const sleeve = link && $$("#albums .album__sleeve")[Number(link.dataset.album)];
       if (sleeve && sleeve.matches("button") && sleeve.getAttribute("aria-pressed") !== "true") setTimeout(() => sleeve.click(), 700);
@@ -540,44 +569,6 @@
         setTimeout(() => m.classList.add("is-sent"), 1000 + i * 550);
       });
     };
-  }
-
-  /* ---------- Hero: "… and a music producer / an ad film maker / …" ---------- */
-  function initRoller() {
-    const roller = $("#roleRoller");
-    if (!roller) return;
-    const words = data.alsoRoles || [];
-    const and = $(".hero__and");
-    if (!words.length) return roller.closest(".hero__roles-also")?.remove();
-    const article = (w) => (/^[aeiou]/i.test(w) ? "and an" : "and a");
-    const fit = (el) => (roller.style.width = `${el.offsetWidth}px`);
-    // Each role gets its own colour: vermillion, cobalt, green, teal.
-    const colours = ["--c0-t", "--c1-t", "--c3-t", "--c5-t"];
-    const colour = (n) => `var(${colours[n % colours.length]})`;
-    roller.innerHTML = `<span class="roller__word" style="color: ${colour(0)}">${esc(words[0])}</span>`;
-    and.textContent = article(words[0]);
-    fit(roller.firstElementChild);
-    if (document.fonts) document.fonts.ready.then(() => fit(roller.lastElementChild));
-    addEventListener("resize", () => fit(roller.lastElementChild));
-    if (reduceMotion || words.length < 2) return;
-    let i = 0;
-    setInterval(() => {
-      if (document.hidden) return;
-      i = (i + 1) % words.length;
-      const old = roller.lastElementChild;
-      const next = document.createElement("span");
-      next.className = "roller__word is-in";
-      next.style.color = colour(i);
-      next.textContent = words[i];
-      roller.appendChild(next);
-      fit(next);
-      and.textContent = article(words[i]);
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        next.classList.remove("is-in");
-        old.classList.add("is-out");
-      }));
-      setTimeout(() => old.remove(), 700);
-    }, 2600);
   }
 
   /* ---------- Loader (home, first visit): greetings + a ring that fills ---------- */
@@ -642,7 +633,6 @@
   initPointerFx();
   initCursor();
   const startChat = initChat();
-  initRoller();
   preload(() => {
     document.body.classList.add("is-ready");
     initReveal();

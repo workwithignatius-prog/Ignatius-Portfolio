@@ -6,10 +6,12 @@ window.PORTFOLIO = {
   handle: "itsigni",
   greeting: "Heyyya, I'm",
   heroBadge: "a.k.a. itsigni",
-  role: "Presales & Solutions Engineer", // the day job: the hero says "… by day, and a music producer"
+  role: "Presales & Solutions Engineer", // the day job: the hero says "By day, I'm a …"
+  // The hero's big line. Each passion's `word` below is underlined in that passion's colour
+  // and links to its record in the B-sides.
+  headline: "I make music, films & designs, create content and train.",
   tagline:
     "This is my corner of the internet: the music, films and designs I make, the content I create and the training in between.",
-  status: "Ask me about music, films, design or training",
   metaDescription:
     "Ignatius Nirmal G (itsigni) from Chennai, India: music producer, ad film maker, designer and content creator who trains in calisthenics and the gym.",
   location: "Chennai, India",
@@ -34,11 +36,9 @@ window.PORTFOLIO = {
   formEndpoint: "",
   contactTopics: ["Just saying hi", "A collaboration", "Music", "An ad film or video", "Design", "Content", "Something else"],
 
-  // The hero's second line cycles through these: "… by day, and a music producer"
-  alsoRoles: ["music producer", "ad film maker", "designer", "content creator"],
-
   // "The B-sides": everything beyond the day job. Each one gets a generated album cover,
-  // a chat bubble in the hero and a line in the liner notes.
+  // a chat bubble in the hero, a line in the liner notes and, if its `word` appears in the
+  // headline, a coloured underline there.
   // art: music, film, design, content, calisthenics or gym. Optional: cover (an image
   // path, e.g. "assets/b-sides/music.jpg") and link (Spotify, YouTube, Instagram…).
   passions: [
@@ -46,31 +46,31 @@ window.PORTFOLIO = {
       title: "Music Producer",
       tagline: "Beats, mixes and sound design",
       story: "I make beats, mix tracks and design sounds, building each track from the first loop to the final mix.",
-      art: "music", cover: "", link: "",
+      art: "music", word: "music", cover: "", link: "",
     },
     {
       title: "Ad Film Maker",
       tagline: "From concept to the final cut",
       story: "I make ad films: the idea, the script, the shoot and the edit, all the way to the final cut.",
-      art: "film", cover: "", link: "",
+      art: "film", word: "films", cover: "", link: "",
     },
     {
       title: "Designer",
       tagline: "Brands, visuals and layouts",
       story: "I design brands, visuals and layouts, from logos to posts for the feed.",
-      art: "design", cover: "", link: "",
+      art: "design", word: "designs", cover: "", link: "",
     },
     {
       title: "Content Creator",
       tagline: "Stories for the feed",
       story: "I create content and share the stories behind everything else on this page.",
-      art: "content", cover: "", link: "",
+      art: "content", word: "content", cover: "", link: "",
     },
     {
       title: "Calisthenics",
       tagline: "Bodyweight strength and skills",
       story: "Bodyweight strength and skills, trained on the bars and the floor.",
-      art: "calisthenics", cover: "", link: "",
+      art: "calisthenics", word: "train", cover: "", link: "",
     },
     {
       title: "Gym",
@@ -80,8 +80,9 @@ window.PORTFOLIO = {
     },
   ],
 
+  // The intro line under the hero. Wrap words in *stars* to colour them.
   statement:
-    "By day I'm a presales and solutions engineer. The rest of the time I'm making beats, shooting ad films, designing, creating content or training, and this site is where all of it lives.",
+    "Think of this site as a record. The day job is *side A.* Everything I love making is on the *B-side,* so flip it over and hit play.",
 
   marquee: ["Music production", "Ad films", "Design", "Content", "Calisthenics", "Gym", "Chennai", "itsigni"],
 
