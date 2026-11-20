@@ -62,7 +62,26 @@ Settings at the top of `site/content.js`:
 
 Photos go in `site/assets/blog/`. In a post, the text in quotes after an image becomes its caption: `![A parrot on my shoulder](/assets/blog/bird.jpg "The moment it landed.")`. Put two or three images on lines next to each other to show them side by side; a landscape photo on its own runs wide.
 
-The example post `site/blog/posts/2026-10-28-how-to-write-a-post.md` shows every formatting option. It's a draft, so it never appears on the live site.
+Formatting, in Markdown:
+
+- `## Heading` for a section, `### Smaller heading` for a sub-section.
+- `**bold**`, `_italics_` and `[a link](https://example.com)`.
+- A line starting with `>` becomes a large pull quote.
+- Lists start with `-`, or `1.` for numbered ones.
+- To end a post with a "Little things I noticed" card, wrap a heading and a list (keep the empty lines):
+
+  ```
+  <aside class="noticed">
+
+  ### Little things I noticed
+
+  - One small thing.
+  - Another small thing.
+
+  </aside>
+  ```
+
+The posts in `site/blog/posts/` show all of this in use.
 
 ## Preview on your computer
 
