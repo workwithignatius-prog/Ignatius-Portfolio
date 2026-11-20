@@ -29,6 +29,16 @@
     gym: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></svg>',
   };
 
+  // Little animated cut-outs that follow each passion word in the hero statement.
+  const STICKERS = {
+    music: '<svg viewBox="0 0 24 24"><g class="st-nod"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2.5" y="14" width="5" height="7" rx="2"/><rect x="16.5" y="14" width="5" height="7" rx="2"/></g></svg>',
+    film: '<svg viewBox="0 0 24 24"><rect x="3" y="10" width="18" height="11" rx="2"/><path d="M8 13.5l2 3M13 13.5l2 3"/><g class="st-clap"><path d="M3.2 9.4l16.6-4.6 1 3.4-16.6 4.6z"/></g></svg>',
+    design: '<svg viewBox="0 0 24 24"><path class="st-line" d="M2.5 20.5c2.5-2.5 4.5 1 7-1.5s4.5 1 7-1.5"/><g class="st-pen"><path d="M13.5 3.5l6 6-7.5 7.5-3.8 1.3 1.3-3.8z"/><path d="M11.5 12.5l2 2"/></g></svg>',
+    content: '<svg viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="M16 10.5l6-3.5v10l-6-3.5z"/><circle class="st-rec" cx="6.2" cy="10.2" r="1.7"/></svg>',
+    calisthenics: '<svg viewBox="0 0 24 24"><g class="st-swing"><path d="M7 1v8.5M17 1v8.5"/><circle cx="7" cy="14" r="4.5"/><circle cx="17" cy="14" r="4.5"/></g></svg>',
+    gym: '<svg viewBox="0 0 24 24"><g class="st-lift"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></g></svg>',
+  };
+
   /* Adds the photo to a frame; keeps the monogram if the file is missing. */
   function mountPhoto(frame) {
     if (!frame || !data.photo) return;
@@ -68,6 +78,9 @@
         .join("");
     });
     $$("[data-location]").forEach((el) => (el.textContent = data.location));
+    $$("[data-city]").forEach((el) => (el.textContent = data.city || data.location));
+    $$("[data-region]").forEach((el) => (el.textContent = data.region || ""));
+    stamps();
     $$("[data-tz]").forEach((el) => (el.textContent = data.timezoneLabel || ""));
     $$("[data-availability]").forEach((el) => (el.hidden = !data.available));
     $$("[data-availability-text]").forEach((el) => (el.textContent = data.availability));
@@ -78,6 +91,28 @@
     });
     const topic = $("#fTopic");
     if (topic) topic.innerHTML = data.contactTopics.map((o) => `<option>${esc(o)}</option>`).join("");
+  }
+
+  /* A postage stamp of Chennai, with a postmark that shows the local time. */
+  function stamps() {
+    const ring = [data.city, data.region].filter(Boolean).join(" · ").toUpperCase();
+    $$("[data-stamp]").forEach((el, i) => {
+      el.setAttribute("role", "img");
+      el.setAttribute("aria-label", `Postage stamp: ${[data.city, data.region].filter(Boolean).join(", ")}`);
+      el.innerHTML = `
+        <span class="stamp__paper">
+          <img class="stamp__art" src="${asset("assets/chennai.svg")}" alt="" width="120" height="150">
+          <span class="stamp__value mono">₹5</span>
+          <span class="stamp__name">${esc(data.city || data.location)}</span>
+        </span>
+        <svg class="postmark" viewBox="0 0 170 84" aria-hidden="true">
+          <defs><path id="postmark${i}" d="M10.5 42a31.5 31.5 0 1 1 63 0a31.5 31.5 0 1 1 -63 0"/></defs>
+          <circle cx="42" cy="42" r="38"/><circle cx="42" cy="42" r="25"/>
+          <text class="postmark__ring"><textPath href="#postmark${i}" textLength="194" lengthAdjust="spacing">${esc(ring)} ·</textPath></text>
+          <text class="postmark__time" x="42" y="45.5" text-anchor="middle" data-clock>--:--</text>
+          <path class="postmark__waves" d="M86 26q7-6 14 0t14 0t14 0t14 0t14 0M86 42q7-6 14 0t14 0t14 0t14 0t14 0M86 58q7-6 14 0t14 0t14 0t14 0t14 0"/>
+        </svg>`;
+    });
   }
 
   /* "The B-sides": album sleeves with generated cover art and a record that slides out. */
@@ -150,7 +185,9 @@
       const i = words.get(w.toLowerCase());
       if (used.has(i)) return w;
       used.add(i);
-      return `<a class="hero__word" href="#b-sides" data-album="${i}" data-cursor="Play" style="${tone(i)}">${w}</a>`;
+      const art = data.passions[i].art;
+      const sticker = STICKERS[art] ? `<span class="sticker sticker--${art}" aria-hidden="true">${STICKERS[art]}</span>` : "";
+      return `<a class="hero__word" href="#b-sides" data-album="${i}" data-cursor="Play" style="${tone(i)}">${w}${sticker}</a>`;
     });
   }
 
@@ -211,6 +248,23 @@
     el.style.width = "";
     const box = el.parentElement.getBoundingClientRect().width;
     el.style.fontSize = `${Math.floor((100 * box * 0.995) / natural)}px`;
+  }
+
+  /* The a.k.a. bubble floats above the last two characters of the name (the S and the !). */
+  function placeBadge() {
+    const badge = $("#heroBadge");
+    const chars = $$("#heroName .ch");
+    if (!badge || chars.length < 2) return;
+    badge.style.left = badge.style.right = badge.style.top = "";
+    if (matchMedia("(max-width: 900px)").matches) return;
+    const box = badge.offsetParent.getBoundingClientRect();
+    const s = chars[chars.length - 2].getBoundingClientRect();
+    const bang = chars[chars.length - 1].getBoundingClientRect();
+    const left = (s.left + bang.right) / 2 - box.left - badge.offsetWidth / 2;
+    badge.style.left = `${Math.round(Math.min(left, box.width - badge.offsetWidth))}px`;
+    badge.style.right = "auto";
+    // Just clear of the tops of the letters.
+    badge.style.top = `${Math.round(Math.max(-8, s.top - box.top - badge.offsetHeight - 12))}px`;
   }
 
   /* Two-column hero: tuck the portrait just under the name, centred on the gap between its last two
@@ -312,7 +366,17 @@
     } catch {
       fmt = new Intl.DateTimeFormat([], { hour: "2-digit", minute: "2-digit" });
     }
-    const tick = () => clocks.forEach((el) => (el.textContent = fmt.format(new Date())));
+    const tick = () => {
+      const now = new Date();
+      const text = fmt.format(now);
+      clocks.forEach((el) => {
+        if (el.dataset.clock !== "split") { el.textContent = text; return; }
+        const parts = fmt.formatToParts(now);
+        const period = parts.find((p) => p.type === "dayPeriod");
+        const time = parts.filter((p) => p.type !== "dayPeriod").map((p) => p.value).join("").trim();
+        el.innerHTML = period ? `${esc(time)}<small>${esc(period.value)}</small>` : esc(time);
+      });
+    };
     tick();
     setInterval(tick, 15000);
   }
@@ -620,7 +684,7 @@
   renderCommon();
   renderHome();
   renderAboutPage();
-  const layoutHero = () => { fitName(); placePhoto(); };
+  const layoutHero = () => { fitName(); placePhoto(); placeBadge(); };
   layoutHero();
   addEventListener("resize", layoutHero);
   if (document.fonts) document.fonts.ready.then(layoutHero);

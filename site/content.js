@@ -15,10 +15,12 @@ window.PORTFOLIO = {
   metaDescription:
     "Ignatius Nirmal G (itsigni) from Chennai, India: music producer, ad film maker, designer and content creator who trains in calisthenics and the gym.",
   location: "Chennai, India",
+  city: "Chennai", // the postage stamp and the "My base" card
+  region: "Tamil Nadu, India",
   timezone: "Asia/Kolkata", // IANA zone for the live clock
   timezoneLabel: "IST",
   available: true,
-  availability: "Open to new opportunities",
+  availability: "Taking requests: collabs, gigs & new roles",
   email: "hello@itsigni.com",
 
   // The live address of the site, used in share links, the RSS feed and the sitemap.
