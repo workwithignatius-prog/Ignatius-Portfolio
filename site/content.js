@@ -35,12 +35,13 @@ window.PORTFOLIO = {
   heroFilm: {
     src: "assets/clips/hero-film.mp4",
     scenes: [
-      { passion: 0, at: 4 }, // keyboard
-      { passion: 1, at: 10 }, // ad film set
-      { passion: 2, at: 15.9 }, // da Vinci at the easel
-      { passion: 3, at: 22.1 }, // vlogging
-      { passion: 4, at: 28.1 }, // pull-ups
-      { passion: -1, at: 32.4 }, // spinning back into the photo
+      { passion: 0, at: 2.5 }, // keyboard, in a leather jacket
+      { passion: 1, at: 6.8 }, // ad film set, in a bomber
+      { passion: 2, at: 10.9 }, // painting as Leonardo da Vinci
+      { passion: 3, at: 15.1 }, // vlogging, in a varsity jacket
+      { passion: 4, at: 18.8 }, // pull-ups at sunset
+      { passion: 5, at: 23 }, // dumbbell curls in the gym
+      { passion: -1, at: 26.9 }, // spinning back into the photo
     ],
   },
 
