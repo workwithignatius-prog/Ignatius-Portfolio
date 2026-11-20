@@ -633,11 +633,28 @@
     const chat = $("#chat");
     if (!chat) return () => {};
     const msgs = $$(".chat__msg", chat);
-    // Hovering a passion word in the statement nudges its bubble.
-    const words = $("#heroStatement");
-    const hint = (word) => msgs.forEach((m, i) => m.classList.toggle("is-hinted", !!word && i === Number(word.dataset.album)));
-    words?.addEventListener("pointerover", (e) => hint(e.target.closest(".hero__word")));
-    words?.addEventListener("pointerleave", () => hint(null));
+    const words = $$(".hero__word");
+    // Pointing at a passion, as a word in the statement or as a bubble, nudges its bubble,
+    // lights up its word and plays its clip in the portrait.
+    const mark = (i) => {
+      msgs.forEach((m, j) => m.classList.toggle("is-hinted", j === i));
+      words.forEach((w) => w.classList.toggle("is-on", Number(w.dataset.album) === i));
+    };
+    const clips = initClips(mark);
+    let touched = false;
+    // Only a passion itself takes over from the tour; passing over the rest of the text doesn't.
+    const pick = (e) => {
+      const link = e.target.closest("[data-album]");
+      if (link) { touched = true; clips.stop(); }
+      if (link || !clips.touring) clips.show(link ? Number(link.dataset.album) : -1);
+    };
+    [$("#heroStatement"), chat].forEach((el) => {
+      if (!el) return;
+      el.addEventListener("pointerover", pick);
+      el.addEventListener("pointerleave", () => { if (!clips.touring) clips.show(-1); });
+      el.addEventListener("focusin", pick);
+      el.addEventListener("focusout", (e) => { if (!clips.touring && !e.relatedTarget?.closest?.("[data-album]")) clips.show(-1); });
+    });
     // A bubble or a passion word jumps to its record in the B-sides and puts it on.
     $("[data-hero]").addEventListener("click", (e) => {
       const link = e.target.closest("[data-album]");
@@ -650,7 +667,99 @@
         setTimeout(() => m.classList.add("is-typing"), 300 + i * 550);
         setTimeout(() => m.classList.add("is-sent"), 1000 + i * 550);
       });
+      // Once the bubbles are in, the portrait acts out each passion in turn, unless the visitor got there first.
+      setTimeout(() => { if (!touched) clips.tour(); }, 2200 + msgs.length * 550);
     };
+  }
+
+  /* Short silent clips of me at each passion (`clip` in content.js), played inside the portrait.
+     Nothing loads until a clip is needed; reduced motion keeps the photo. */
+  function initClips(mark) {
+    const frame = $(".portrait__frame");
+    const files = (data.passions || []).map((p) => p.clip || "");
+    if (!frame || reduceMotion || !files.some(Boolean)) return { show: mark, tour() {}, stop() {}, touring: false };
+    const videos = [];
+    let current = -1;
+    let touring = false;
+    let visible = true;
+    let timer = 0;
+
+    const video = (i) => {
+      if (!videos[i]) {
+        const v = document.createElement("video");
+        v.className = "portrait__clip";
+        v.muted = v.defaultMuted = true;
+        v.playsInline = true;
+        v.loop = true;
+        v.preload = "auto";
+        v.setAttribute("muted", "");
+        v.setAttribute("playsinline", "");
+        v.setAttribute("aria-hidden", "true");
+        v.addEventListener("playing", () => v.classList.toggle("is-on", current === i));
+        v.src = asset(files[i]);
+        frame.appendChild(v);
+        videos[i] = v;
+      }
+      return videos[i];
+    };
+
+    const show = (i) => {
+      mark(i);
+      const next = files[i] ? i : -1;
+      if (next === current) return;
+      current = next;
+      videos.forEach((v, j) => {
+        if (!v || j === next) return;
+        v.classList.remove("is-on");
+        setTimeout(() => { if (current !== j) v.pause(); }, 400);
+      });
+      if (next < 0) return;
+      const v = video(next);
+      if (!v.paused) return v.classList.add("is-on"); // still fading out: bring it straight back
+      v.currentTime = 0;
+      if (visible) v.play().catch(() => {});
+    };
+
+    const stop = () => {
+      if (!touring) return;
+      touring = false;
+      clearTimeout(timer);
+      videos.forEach((v) => { if (v) v.loop = true; });
+    };
+
+    // One pass through every clip, then back to the photo.
+    const tour = () => {
+      if (!visible || navigator.connection?.saveData) return;
+      const order = files.map((f, i) => (f ? i : -1)).filter((i) => i >= 0);
+      touring = true;
+      const step = () => {
+        clearTimeout(timer);
+        if (!touring) return;
+        const i = order.shift();
+        if (i === undefined) { touring = false; show(-1); return; }
+        show(i);
+        if (order.length) video(order[0]); // fetch the next clip while this one plays
+        const v = video(i);
+        const done = () => {
+          v.removeEventListener("ended", done);
+          v.loop = true;
+          step();
+        };
+        v.loop = false;
+        v.addEventListener("ended", done);
+        timer = setTimeout(done, 9000); // in case a clip never loads
+      };
+      step();
+    };
+
+    // Clips rest while the hero is off screen.
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      const v = videos[current];
+      if (!visible) { stop(); v?.pause(); } else v?.play().catch(() => {});
+    }).observe(frame);
+
+    return { show, tour, stop, get touring() { return touring; } };
   }
 
   /* ---------- Loader (home, first visit): greetings + a ring that fills ---------- */

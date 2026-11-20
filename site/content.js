@@ -43,37 +43,38 @@ window.PORTFOLIO = {
   // a chat bubble in the hero, a line in the liner notes and, if its `word` appears in the
   // headline, a coloured underline there.
   // art: music, film, design, content, calisthenics or gym. Optional: cover (an image
-  // path, e.g. "assets/b-sides/music.jpg") and link (Spotify, YouTube, Instagram…).
+  // path, e.g. "assets/b-sides/music.jpg"), link (Spotify, YouTube, Instagram…) and clip
+  // (a short silent looping video that plays in the hero portrait, e.g. "assets/clips/music.mp4").
   passions: [
     {
       title: "Music Producer",
       tagline: "Beats, mixes and sound design",
       story: "I make beats, mix tracks and design sounds, building each track from the first loop to the final mix.",
-      art: "music", word: "music", cover: "", link: "",
+      art: "music", word: "music", cover: "", link: "", clip: "assets/clips/music.mp4",
     },
     {
       title: "Ad Film Maker",
       tagline: "From concept to the final cut",
       story: "I make ad films: the idea, the script, the shoot and the edit, all the way to the final cut.",
-      art: "film", word: "films", cover: "", link: "",
+      art: "film", word: "films", cover: "", link: "", clip: "assets/clips/films.mp4",
     },
     {
       title: "Designer",
       tagline: "Brands, visuals and layouts",
       story: "I design brands, visuals and layouts, from logos to posts for the feed.",
-      art: "design", word: "designs", cover: "", link: "",
+      art: "design", word: "designs", cover: "", link: "", clip: "assets/clips/designs.mp4",
     },
     {
       title: "Content Creator",
       tagline: "Stories for the feed",
       story: "I create content and share the stories behind everything else on this page.",
-      art: "content", word: "content", cover: "", link: "",
+      art: "content", word: "content", cover: "", link: "", clip: "assets/clips/content.mp4",
     },
     {
       title: "Calisthenics",
       tagline: "Bodyweight strength and skills",
       story: "Bodyweight strength and skills, trained on the bars and the floor.",
-      art: "calisthenics", word: "train", cover: "", link: "",
+      art: "calisthenics", word: "train", cover: "", link: "", clip: "assets/clips/train.mp4",
     },
     {
       title: "Gym",
