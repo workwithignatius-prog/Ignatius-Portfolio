@@ -40,8 +40,8 @@ window.PORTFOLIO = {
       { passion: 2, at: 14.3 }, // painting, then sketching, as Leonardo da Vinci
       { passion: 3, at: 21.7 }, // vlogging in Paris, with a drone shot over the Seine
       { passion: 4, at: 29.4 }, // pull-ups, a pistol squat and a handstand at sunset
-      { passion: 5, at: 37.3 }, // dumbbell curls in the gym
-      { passion: -1, at: 41.6 }, // spinning back into the photo
+      { passion: 5, at: 41.4 }, // dumbbell curls in the gym
+      { passion: -1, at: 45.7 }, // spinning back into the photo
     ],
   },
 
