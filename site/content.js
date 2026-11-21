@@ -128,7 +128,6 @@ window.PORTFOLIO = {
   // Add Instagram, YouTube, Spotify, Behance… the same way. `footer: false` leaves a link out of the footer.
   socials: [
     { label: "LinkedIn", url: "https://www.linkedin.com/in/itsigni/" },
-    { label: "GitHub", url: "https://github.com/workwithignatius-prog", footer: false },
   ],
 
   // Greetings cycled on the home page's loading screen.
