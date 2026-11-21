@@ -78,7 +78,7 @@
     });
     $$("[data-socials-list]").forEach((li) => {
       li.outerHTML = (data.socials || [])
-        .filter((s) => s.url)
+        .filter((s) => s.url && s.footer !== false)
         .map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></li>`)
         .join("");
     });
