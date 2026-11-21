@@ -28,8 +28,12 @@ const toneOf = (topic) => TONES[Math.max(0, TOPICS.indexOf(topic)) % TONES.lengt
 // Email apps such as Zoho drop CSS like word-break, so a long word or link would push the card
 // wider than a phone. These put the break points into the text itself.
 const chunks = (word, size) => word.match(new RegExp(`.{1,${size}}`, "gu")) || [word];
-// Escapes text and lets words over 16 characters break every 12 (<wbr> adds no hyphen).
-const breakable = (s) => String(s).split(/(\s+)/).map((w) => ([...w].length > 16 ? chunks(w, 12).map(esc).join("<wbr>") : esc(w))).join("");
+// Escapes text and lets words over 16 characters break every 12 characters. Each piece is its own
+// inline block, so a line can break between pieces without adding a character (Zoho strips <wbr>),
+// and copying the text still gives the word exactly as typed.
+const breakable = (s, style = "") => String(s).split(/(\s+)/)
+  .map((w) => ([...w].length > 16 ? chunks(w, 12).map((c) => `<span style="display:inline-block;${style}">${esc(c)}</span>`).join("") : esc(w)))
+  .join("");
 // One line of the visitor's message: escaped, with web addresses made clickable.
 const URL_IN_TEXT = /\bhttps?:\/\/[^\s<>"]*[^\s<>".,;:!?'")\]]/gi;
 function rich(line) {
@@ -37,7 +41,7 @@ function rich(line) {
   let last = 0;
   for (const m of line.matchAll(URL_IN_TEXT)) {
     html += breakable(line.slice(last, m.index));
-    html += `<a href="${esc(m[0])}" style="color:${C.ink};text-decoration:underline;">${breakable(m[0])}</a>`;
+    html += `<a href="${esc(m[0])}" style="color:${C.ink};text-decoration:underline;">${breakable(m[0], "text-decoration:underline;")}</a>`;
     last = m.index + m[0].length;
   }
   return html + breakable(line.slice(last));

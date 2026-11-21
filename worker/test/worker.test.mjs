@@ -38,6 +38,8 @@ function post(body, { origin = "https://itsigni.com", ip = `203.0.113.${++ipCoun
   });
 }
 const good = { name: "Priya Raman", email: "priya@example.com", link: "instagram.com/priya", topic: "A collaboration", message: "Hi!\n\nLoved the B-sides. Shall we make something?" };
+// The emails as text a person reads: long words are split into inline blocks so they can wrap.
+const joined = (html) => html.replace(/<span style="display:inline-block;[^"]*">([^<]*)<\/span>/g, "$1");
 const call = async (request) => {
   const res = await handle(request, env);
   return { res, body: await res.json().catch(() => null) };
@@ -111,7 +113,7 @@ test("line breaks can't sneak into the email headers", async () => {
 
 test("the message is shown as text, never as HTML", async () => {
   await call(post({ ...good, message: `<script>alert(1)</script><img src=x onerror=alert(2)> "quoted" & more` }));
-  const html = sent[0].html.replace(/<wbr>/g, "");
+  const html = joined(sent[0].html);
   assert.doesNotMatch(html, /<script>|<img src=x/);
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
   assert.match(html, /&quot;quoted&quot; &amp; more/);
@@ -126,8 +128,10 @@ test("both emails hold their shape in strict email apps like Zoho", () => {
   // The Reply button keeps the @ as typed: Zoho breaks a mailto link whose @ is encoded.
   assert.match(owner.html, /href="mailto:priya@example\.com\?subject=Re%3A%20A%20collaboration"/);
   // A long link in the message is clickable and can break across lines.
-  assert.match(owner.html, /<a href="https:\/\/www\.behance\.net\/gallery\/123456789\/A-Very-Long-Project-Name-Here" [^>]*>https:\/\/www\.<wbr>behance\.net\/<wbr>gallery\/1234<wbr>/);
-  assert.match(owner.html, /Here<\/a>\. Thoughts\?/, "the full stop after a link isn't part of it");
+  assert.match(owner.html, /<a href="https:\/\/www\.behance\.net\/gallery\/123456789\/A-Very-Long-Project-Name-Here" [^>]*><span style="display:inline-block;text-decoration:underline;">https:\/\/www\.<\/span><span style="display:inline-block;text-decoration:underline;">behance\.net\/<\/span>/);
+  assert.match(joined(owner.html), />https:\/\/www\.behance\.net\/gallery\/123456789\/A-Very-Long-Project-Name-Here<\/a>/);
+  assert.doesNotMatch(owner.html, /<wbr>|\u200b/, "Zoho strips <wbr>, and invisible characters would break a copied address");
+  assert.match(joined(owner.html), /Here<\/a>\. Thoughts\?/, "the full stop after a link isn't part of it");
   // Long names get a smaller headline with soft hyphens.
   assert.match(thanks.html, /font:800 24px\/1\.05 [^>]*>Thanks, Venkates&shy;hwaran!<\/h1>/);
   assert.match(renderThankYouEmail({ name: "Priya", topic: "Music" }).html, /font:800 32px[^>]*>Thanks, Priya!</);
@@ -137,7 +141,7 @@ test("both emails hold their shape in strict email apps like Zoho", () => {
 test("a link that isn't a web address is shown but not linked", async () => {
   await call(post({ ...good, link: "javascript:alert(1)" }));
   assert.doesNotMatch(sent[0].html, /href="javascript:/);
-  assert.match(sent[0].html.replace(/<wbr>/g, ""), /javascript:alert\(1\)/);
+  assert.match(joined(sent[0].html), /javascript:alert\(1\)/);
 });
 
 test("missing or bad fields are explained, and nothing is sent", async () => {
