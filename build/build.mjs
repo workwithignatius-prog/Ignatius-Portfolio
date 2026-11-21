@@ -4,7 +4,7 @@
 //   - fills <!-- include:name --> markers with site/_partials/name.html
 //   - replaces {{variables}} (HTML-escaped) and {{{variables}}} (raw)
 //   - turns site/blog/posts/*.md into blog/<slug>/index.html pages
-//   - writes the blog listing, the home page's latest posts, feed.xml and sitemap.xml
+//   - writes the blog listing, the home page's latest posts and sitemap.xml
 //
 // Usage: node build/build.mjs [--out dist] [--drafts] [--dev]
 //   --drafts  include posts marked `draft: true`
@@ -59,7 +59,6 @@ function main() {
     write(rel, renderPost(rel, layout, post, posts[i - 1], posts[i + 1]));
   });
 
-  write("feed.xml", renderFeed(posts));
   write("sitemap.xml", renderSitemap(pages, posts));
   if (!DEV) write("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 
@@ -141,6 +140,13 @@ function baseVars(rel, root) {
     contactTitle: "Let's make something",
     contactLead:
       "A beat, a film, a design, a collab or just a hello: I'd love to hear about it. I usually reply within two working days.",
+    // Without a Calendly link there's no call to book, so the copy doesn't offer one.
+    reachHtml: data.calendlyUrl
+      ? `Book a call, <a href="${root}contact.html">send me a message</a>`
+      : `<a href="${root}contact.html">Send me a message</a>`,
+    contactWays: data.calendlyUrl
+      ? "You can book a call, email me directly, or use the form below."
+      : "You can email me directly or use the form below.",
     devBadge: DEV ? `<p class="dev-badge mono">Dev preview · drafts visible · not live</p>` : "",
   };
 }
@@ -371,11 +377,8 @@ function postListHtml(posts, root) {
       <div class="empty glow">
         <span class="empty__mark" aria-hidden="true">✍</span>
         <h2>The first post is on its way</h2>
-        <p>I'm writing about presales, solution engineering, SaaS and AI. ${linkedin ? "Follow me on LinkedIn or subscribe" : "Subscribe"} to the RSS feed to read it first.</p>
-        <div class="empty__cta">
-          ${linkedin ? `<a class="btn btn--primary" href="${esc(linkedin.url)}" target="_blank" rel="noopener">Follow on LinkedIn</a>` : ""}
-          <a class="btn btn--ghost" href="${root}feed.xml">RSS feed</a>
-        </div>
+        <p>Small stories about the things I notice are coming soon.${linkedin ? " Follow me on LinkedIn to catch the first one." : ""}</p>
+        ${linkedin ? `<div class="empty__cta"><a class="btn btn--primary" href="${esc(linkedin.url)}" target="_blank" rel="noopener">Follow on LinkedIn</a></div>` : ""}
       </div>`;
   }
   return `
@@ -392,32 +395,7 @@ function tagFilterHtml(posts) {
     .join("");
 }
 
-/* ---------- Feed and sitemap ---------- */
-
-function renderFeed(posts) {
-  const items = posts
-    .map(
-      (p) => `
-    <item>
-      <title>${esc(p.title)}</title>
-      <link>${SITE_URL}/blog/${p.slug}/</link>
-      <guid>${SITE_URL}/blog/${p.slug}/</guid>
-      <pubDate>${p.date.toUTCString()}</pubDate>
-      <description>${esc(p.excerpt)}</description>
-    </item>`
-    )
-    .join("");
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
-  <channel>
-    <title>${esc(data.fullName)} — Blog</title>
-    <link>${SITE_URL}/blog/</link>
-    <description>${esc(data.blogDescription || "Notes on music, films, design, training and whatever else I'm into.")}</description>
-    <language>en</language>${items}
-  </channel>
-</rss>
-`;
-}
+/* ---------- Sitemap ---------- */
 
 function renderSitemap(pages, posts) {
   const urls = pages
