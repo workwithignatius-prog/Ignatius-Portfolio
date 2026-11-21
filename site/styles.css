@@ -194,7 +194,7 @@ h1, h2, h3 { text-wrap: balance; }
   mask-image: radial-gradient(ellipse at 50% 60%, #000 15%, transparent 72%); -webkit-mask-image: radial-gradient(ellipse at 50% 60%, #000 15%, transparent 72%); }
 
 .hero__headline { position: relative; display: flex; flex-direction: column; gap: 12px; }
-.hero__title { margin: 0; display: flex; flex-direction: column; gap: 4px; font-weight: 400; }
+.hero__title { margin: 0; display: flex; flex-direction: column; gap: 4px; font-weight: 400; container-type: inline-size; }
 .hero__greet { display: inline-flex; align-items: center; gap: .3em; font: 700 clamp(28px, 4vw, 58px)/1.05 var(--display); letter-spacing: -.03em; color: var(--ink); }
 .wave { display: inline-block; transform-origin: 70% 80%; animation: wave 2.8s ease-in-out 1.4s infinite; }
 @keyframes wave { 0%, 60%, 100% { transform: rotate(0); } 10%, 30% { transform: rotate(16deg); } 20% { transform: rotate(-8deg); } 40% { transform: rotate(-4deg); } 50% { transform: rotate(10deg); } }
@@ -206,7 +206,11 @@ h1, h2, h3 { text-wrap: balance; }
 .hero__badge::after { content: ""; position: absolute; left: -9px; bottom: 0; width: 18px; height: 15px; background: inherit;
   clip-path: polygon(100% 0, 100% 100%, 0 100%); }
 .hero__name { display: flex; justify-content: space-between; font-family: var(--display); font-weight: 800; text-transform: uppercase;
-  line-height: .82; letter-spacing: -.045em; font-size: 15vw; white-space: nowrap; }
+  line-height: .82; letter-spacing: -.045em; white-space: nowrap;
+  /* Fills the width in the display font from the very first paint, so nothing moves when the font loads
+     (the script then fine-tunes it). 11.3vw is for browsers without container units. */
+  font-size: 11.3vw; font-size: 12.3cqi;
+  min-height: .86em; /* its height before the script adds the letters, so nothing below it moves */ }
 .hero__name .ch { display: inline-block; overflow: hidden; padding-bottom: .04em; }
 .hero__name .ch > span { display: inline-block; transform: translateY(105%); color: var(--ink); transition: transform 1s var(--ease), color .25s; }
 .hero__name .ch:last-child > span { color: var(--red); }
@@ -659,7 +663,7 @@ a.contact-list__value:hover { color: var(--red-ink); }
 .form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .field > span { font-size: 13px; font-weight: 600; color: var(--muted); }
-.field em { font-style: normal; font-weight: 500; opacity: .75; }
+.field em { font-style: normal; font-weight: 400; }
 .field input, .field select, .field textarea { width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line);
   background: #fff; color: var(--ink); font: 500 16px var(--font); transition: border-color .2s, box-shadow .2s; }
 .field textarea { resize: vertical; min-height: 140px; }

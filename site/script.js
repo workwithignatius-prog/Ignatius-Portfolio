@@ -45,6 +45,11 @@
     const img = new Image();
     img.alt = data.fullName;
     img.decoding = "async";
+    // Smaller copies of the photo, listed by the build when they exist.
+    if (frame.dataset.srcset) {
+      img.sizes = frame.dataset.sizes || "100vw";
+      img.srcset = frame.dataset.srcset;
+    }
     img.onload = () => {
       frame.querySelector(".portrait__fallback")?.remove();
       frame.appendChild(img);
@@ -243,10 +248,14 @@
     }).join(" ");
   }
 
-  /* Fit "Ignatius!" to the full width. */
+  /* Fit "Ignatius!" to the full width. The CSS already sizes it for the display font from the first
+     paint, so this only fine-tunes it, and only once that font has loaded: measuring the fallback
+     font made the whole hero jump when the real one arrived. */
   function fitName() {
     const el = $("#heroName");
     if (!el) return;
+    const family = getComputedStyle(el).fontFamily.split(",")[0];
+    if (document.fonts && !document.fonts.check(`800 100px ${family}`)) return;
     el.style.fontSize = "100px";
     el.style.width = "max-content";
     const natural = el.getBoundingClientRect().width;
@@ -820,7 +829,10 @@
   const layoutHero = () => { fitName(); placePhoto(); placeBadge(); };
   layoutHero();
   addEventListener("resize", layoutHero);
-  if (document.fonts) document.fonts.ready.then(layoutHero);
+  if (document.fonts) {
+    document.fonts.ready.then(layoutHero);
+    document.fonts.addEventListener("loadingdone", layoutHero);
+  }
   initClock();
   initBlogFilter();
   initNav();

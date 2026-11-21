@@ -18,7 +18,7 @@
         <h1 class="post-title">{{title}}</h1>
         <p class="post-lead">{{description}}</p>
         <div class="post-meta">
-          <img class="post-meta__avatar" src="{{root}}assets/me.jpg" alt="" width="48" height="48">
+          <img class="post-meta__avatar" src="{{photoSrc}}"{{{photoSet}}} sizes="48px" alt="" width="48" height="48">
           <div>
             <b>{{fullName}}</b>
             <span class="mono"><time datetime="{{dateISO}}">{{dateLabel}}</time> · {{readingTime}} min read</span>
@@ -42,7 +42,7 @@
       </div>
 
       <aside class="author glow" aria-label="About the author">
-        <img class="author__photo" src="{{root}}assets/me.jpg" alt="" width="88" height="88">
+        <img class="author__photo" src="{{photoSrc}}"{{{photoSet}}} sizes="88px" alt="" width="88" height="88" loading="lazy">
         <div class="author__text">
           <p class="mono author__label">Written by</p>
           <p class="author__name">{{fullName}}</p>

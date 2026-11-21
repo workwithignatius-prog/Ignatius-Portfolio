@@ -35,6 +35,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      # Smaller WebP copies of every photo, so phones download far less. If these steps ever fail,
+      # the site still builds and simply uses the original photos.
+      - uses: actions/setup-python@v5
+        continue-on-error: true
+        with:
+          python-version: "3.12"
+      - name: Make smaller copies of the photos
+        continue-on-error: true
+        run: |
+          pip install --quiet pillow==11.0.0
+          if [ -f prod/build/images.py ]; then python prod/build/images.py prod/site; fi
+          if [ -f dev/build/images.py ]; then python dev/build/images.py dev/site; fi
       - name: Build the live site from Prod
         run: |
           if [ -f prod/build/build.mjs ]; then

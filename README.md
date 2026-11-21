@@ -67,7 +67,7 @@ Settings at the top of `site/content.js`:
 4. Commit to `main`. With `draft: true` the post only shows on the dev preview, so you can check it there.
 5. To publish, delete the `draft: true` line, commit, then merge `main` into `Prod`.
 
-Photos go in `site/assets/blog/`. In a post, the text in quotes after an image becomes its caption: `![A parrot on my shoulder](/assets/blog/bird.jpg "The moment it landed.")`. Put two or three images on lines next to each other to show them side by side; a landscape photo on its own runs wide.
+Photos go in `site/assets/blog/`. Use them at full size: when the site is published, smaller copies are made automatically and each visitor's browser downloads the smallest one that looks sharp on their screen. In a post, the text in quotes after an image becomes its caption: `![A parrot on my shoulder](/assets/blog/bird.jpg "The moment it landed.")`. Put two or three images on lines next to each other to show them side by side; a landscape photo on its own runs wide.
 
 Formatting, in Markdown:
 
