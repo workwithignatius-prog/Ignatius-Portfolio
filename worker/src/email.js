@@ -12,7 +12,7 @@ export const TOPICS = ["Just saying hi", "A collaboration", "Music", "An ad film
 
 const C = {
   paper: "#f5f0e6", card: "#fffdf8", ink: "#1c1a17", body: "#2e2a25", muted: "#6b6358",
-  red: "#d2421f", redInk: "#b5381a", yellow: "#f5b700", line: "rgba(28,26,23,0.12)",
+  red: "#d2421f", redInk: "#b5381a", yellow: "#f5b700", line: "#e4e2dd",
 };
 // The site's six item colours, c0 to c5 in styles.css: [background, text on it].
 const TONES = [["#d2421f", "#ffffff"], ["#2457a6", "#ffffff"], ["#f5b700", "#1c1a17"], ["#2a7549", "#ffffff"], ["#e8742a", "#1c1a17"], ["#0f6e6a", "#ffffff"]];
@@ -24,6 +24,47 @@ const LABEL = `font:600 11px/1.4 ${MONO};letter-spacing:0.12em;text-transform:up
 const esc = (s = "") => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const linkify = (url) => (/^https?:\/\/\S+$/i.test(url) ? url : /^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(url) ? `https://${url}` : "");
 const toneOf = (topic) => TONES[Math.max(0, TOPICS.indexOf(topic)) % TONES.length];
+
+// Email apps such as Zoho drop CSS like word-break, so a long word or link would push the card
+// wider than a phone. These put the break points into the text itself.
+const chunks = (word, size) => word.match(new RegExp(`.{1,${size}}`, "gu")) || [word];
+// Escapes text and lets words over 16 characters break every 12 (<wbr> adds no hyphen).
+const breakable = (s) => String(s).split(/(\s+)/).map((w) => ([...w].length > 16 ? chunks(w, 12).map(esc).join("<wbr>") : esc(w))).join("");
+// One line of the visitor's message: escaped, with web addresses made clickable.
+const URL_IN_TEXT = /\bhttps?:\/\/[^\s<>"]*[^\s<>".,;:!?'")\]]/gi;
+function rich(line) {
+  let html = "";
+  let last = 0;
+  for (const m of line.matchAll(URL_IN_TEXT)) {
+    html += breakable(line.slice(last, m.index));
+    html += `<a href="${esc(m[0])}" style="color:${C.ink};text-decoration:underline;">${breakable(m[0])}</a>`;
+    last = m.index + m[0].length;
+  }
+  return html + breakable(line.slice(last));
+}
+
+// The big Syne headline. Syne capitals are wide, and on a 320px phone the card leaves 236px for
+// text. So the headline takes the largest size, up to 36px, at which every word fits, and a word too
+// wide even at 24px gets soft hyphens where it may break. Widths are Syne ExtraBold capitals in em,
+// letter-spacing included, measured in a browser; anything else counts as 1.3em to be safe.
+const SYNE = { A: 1.13, B: 1.1, C: 1.28, D: 1.27, E: 1.1, F: 1.09, G: 1.3, H: 1.25, I: 0.39, J: 0.97, K: 1.18, L: 0.91, M: 1.54, N: 1.26, O: 1.29, P: 1.14, Q: 1.29, R: 1.2, S: 1.02, T: 1.06, U: 1.25, V: 1.13, W: 1.85, X: 1.1, Y: 1.03, Z: 1.17, "!": 0.36, ",": 0.27, ".": 0.3, "'": 0.27, "’": 0.27, "-": 0.56 };
+const ROOM = 236;
+const emWidth = (s) => [...s.toUpperCase()].reduce((sum, c) => sum + (SYNE[c] ?? 1.3), 0);
+function headline(text) {
+  const runs = [];
+  const words = text.trim().split(/\s+/).map((word) => {
+    const pieces = [""];
+    for (const ch of word) {
+      const last = pieces.length - 1;
+      if (pieces[last] && emWidth(pieces[last] + ch) + SYNE["-"] > ROOM / 24) pieces.push(ch);
+      else pieces[last] += ch;
+    }
+    pieces.forEach((piece, i) => runs.push(emWidth(piece) + (i < pieces.length - 1 ? SYNE["-"] : 0)));
+    return pieces.map(esc).join("&shy;");
+  });
+  const size = Math.max(24, Math.min(36, Math.floor(ROOM / Math.max(...runs))));
+  return `<h1 style="margin:0 0 16px;font:800 ${size}px/1.05 ${DISPLAY};letter-spacing:-0.035em;text-transform:uppercase;color:${C.ink};">${words.join(" ")}</h1>`;
+}
 
 // The first word of a name, for greetings, when it looks like a name: letters, apostrophes and
 // hyphens. Anything else, such as a web address typed into the name box, is never repeated back.
@@ -67,12 +108,6 @@ function page({ title, preheader, corner = "", badge, card, footer }) {
 <style>
   @media (max-width: 520px) {
     .px { padding-left: 20px !important; padding-right: 20px !important; }
-    .h1 { font-size: 30px !important; }
-    .stack td { display: block !important; width: auto !important; }
-    .stack td:first-child { border-top: 1px solid rgba(28,26,23,0.12) !important; padding-bottom: 2px !important; }
-    .stack td:last-child { border-top: 0 !important; padding-top: 0 !important; }
-    .pair .cell { display: block !important; padding: 0 0 10px !important; }
-    .btns .cell { display: block !important; padding: 0 0 10px !important; }
   }
 </style>
 </head>
@@ -144,20 +179,24 @@ const plain = (lines) => lines.filter((l, i, a) => l !== "" || a[i - 1] !== "").
 export function renderOwnerEmail({ name, email, link = "", topic = "Something else", message, sentAt = new Date() }) {
   const first = name.trim().split(/\s+/)[0];
   const when = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true }).format(sentAt) + " IST";
-  const replyHref = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(`Re: ${topic}`)}`;
+  // The address goes in as typed: some apps break a mailto link whose @ is encoded.
+  const replyHref = `mailto:${email.replace(/[%?#&]/g, encodeURIComponent)}?subject=${encodeURIComponent(`Re: ${topic}`)}`;
   const linkUrl = link ? linkify(link) : "";
-  const paragraphs = esc(message.trim()).split(/\n{2,}/).map((p) => p.replace(/\n/g, "<br>"));
-  const underline = `color:${C.ink};text-decoration:underline;text-decoration-color:${C.yellow};`;
+  const paragraphs = message.trim().split(/\n{2,}/).map((p) => p.split("\n").map(rich).join("<br>"));
+  const underline = `color:${C.ink};text-decoration:none;border-bottom:2px solid ${C.yellow};`;
+  // Label and value sit side by side when there's room, and stack on a phone.
   const row = (label, value) => `
                     <tr>
-                      <td style="padding:12px 0;border-top:1px solid ${C.line};${LABEL}width:150px;vertical-align:top;">${label}</td>
-                      <td style="padding:12px 0;border-top:1px solid ${C.line};font:500 15px/1.5 ${FONT};color:${C.ink};vertical-align:top;word-break:break-word;">${value}</td>
+                      <td style="padding:12px 0 10px;border-top:1px solid ${C.line};font-size:0;">
+                        <div style="display:inline-block;vertical-align:top;width:150px;font:600 11px/22px ${MONO};letter-spacing:0.12em;text-transform:uppercase;color:${C.muted};">${label}</div>
+                        <div style="display:inline-block;vertical-align:top;width:100%;max-width:340px;font:500 15px/22px ${FONT};color:${C.ink};">${value}</div>
+                      </td>
                     </tr>`;
 
   const subject = `New message from ${name.trim()}: ${topic}`;
   const card = `
                   <p style="margin:0 0 10px;font:600 11px/1.4 ${MONO};letter-spacing:0.14em;text-transform:uppercase;color:${C.redInk};">From the contact form</p>
-                  <h1 class="h1" style="margin:0 0 16px;font:800 36px/1.02 ${DISPLAY};letter-spacing:-0.035em;text-transform:uppercase;color:${C.ink};word-break:break-word;">${esc(name.trim())}</h1>
+                  ${headline(name)}
                   <div style="margin:0 0 26px;">
                   ${pill(topic)}
                   </div>
@@ -165,13 +204,13 @@ export function renderOwnerEmail({ name, email, link = "", topic = "Something el
                   <!-- The message, as a chat bubble -->
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
                     <tr>
-                      <td style="background:${C.paper};border-radius:22px 22px 22px 5px;padding:20px 22px;font:400 17px/1.65 ${FONT};color:${C.body};word-break:break-word;">
+                      <td style="background:${C.paper};border-radius:22px 22px 22px 5px;padding:20px 22px;font:400 17px/1.65 ${FONT};color:${C.body};">
                         ${paragraphs.map((p, i) => `<p style="margin:${i ? "14px" : "0"} 0 0;">${p}</p>`).join("\n                        ")}
                       </td>
                     </tr>
                   </table>
 
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="stack" style="margin:0 0 30px;">${row("Email", `<a href="mailto:${esc(email)}" style="${underline}">${esc(email)}</a>`)}${link ? row("Website or social", linkUrl ? `<a href="${esc(linkUrl)}" style="${underline}">${esc(link)}</a>` : esc(link)) : ""}${row("Reaching out about", esc(topic))}
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 30px;">${row("Email", `<a href="mailto:${esc(email)}" style="${underline}">${breakable(email)}</a>`)}${link ? row("Website or social", linkUrl ? `<a href="${esc(linkUrl)}" style="${underline}">${breakable(link)}</a>` : breakable(link)) : ""}${row("Reaching out about", breakable(topic))}
                   </table>
 
                   <!-- Reply button, like the site's "Let's talk" -->
@@ -221,17 +260,15 @@ export function renderThankYouEmail({ name, topic }) {
 
   const card = `
                   <p style="margin:0 0 10px;font:600 11px/1.4 ${MONO};letter-spacing:0.14em;text-transform:uppercase;color:${C.redInk};">Heyyya from Chennai</p>
-                  <h1 class="h1" style="margin:0 0 16px;font:800 36px/1.02 ${DISPLAY};letter-spacing:-0.035em;text-transform:uppercase;color:${C.ink};">${first ? `Thanks, ${esc(first)}!` : "Thanks for writing!"}</h1>
+                  ${headline(first ? `Thanks, ${first}!` : "Thanks for writing!")}
                   <p style="margin:0 0 24px;font:400 17px/1.65 ${FONT};color:${C.body};">${lead}</p>
 ${known ? `
-                  <table role="presentation" cellpadding="0" cellspacing="0" class="pair" style="margin:0 0 26px;">
-                    <tr>
-                      <td class="cell" style="padding:0 12px 0 0;${LABEL}vertical-align:middle;">You wrote about</td>
-                      <td class="cell" style="vertical-align:middle;">
+                  <div style="margin:0 0 18px;font-size:0;">
+                    <div style="display:inline-block;vertical-align:middle;margin:0 12px 8px 0;${LABEL}">You wrote about</div>
+                    <div style="display:inline-block;vertical-align:middle;margin:0 0 8px;">
                   ${pill(topic)}
-                      </td>
-                    </tr>
-                  </table>
+                    </div>
+                  </div>
 ` : ""}
                   <!-- A chat bubble, like the hero's -->
                   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 30px;">
@@ -243,19 +280,17 @@ ${known ? `
                   </table>
 
                   <p style="margin:0 0 12px;${LABEL}">While you wait</p>
-                  <table role="presentation" cellpadding="0" cellspacing="0" class="btns">
-                    <tr>
-                      <td class="cell" style="padding:0 10px 0 0;">
+                  <div style="font-size:0;">
+                    <div style="display:inline-block;vertical-align:top;margin:0 10px 10px 0;">
                         ${button(`${SITE}/blog/`, "Read the blog")}
-                      </td>
-                      <td class="cell">
+                    </div>
+                    <div style="display:inline-block;vertical-align:top;margin:0 0 10px;">
                         ${button(`${SITE}/#b-sides`, "See the B-sides", true)}
-                      </td>
-                    </tr>
-                  </table>
+                    </div>
+                  </div>
 
                   <!-- Sign-off -->
-                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:30px 0 0;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0 0;">
                     <tr>
                       <td style="padding:24px 0 0;border-top:1px solid ${C.line};">
                         <p style="margin:0 0 4px;font:400 16px/1.5 ${FONT};color:${C.body};">Talk soon,</p>
