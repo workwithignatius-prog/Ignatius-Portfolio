@@ -314,7 +314,8 @@ h1, h2, h3 { text-wrap: balance; }
 .chat__msg.is-sent .chat__body { grid-template-columns: 1fr; }
 .ico { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-@media (max-width: 1200px) { .chat { --overlap: 24%; } .chat__bubble { padding: 8px 12px; font-size: 13px; } }
+/* From here down the bubbles reach into the photo, so they move to the heights that keep the face clear */
+@media (max-width: 1200px) { .chat { --overlap: 24%; } .chat__msg { top: var(--top-clear, var(--top)); } .chat__bubble { padding: 8px 12px; font-size: 13px; } }
 @media (max-width: 1100px) { .chat { --overlap: 36%; } .chat__bubble { padding: 7px 11px; font-size: 12px; } .chat__body .ico { width: 14px; height: 14px; } }
 /* Tablets and phones: the photo and its bubbles go on top */
 @media (max-width: 900px) {
@@ -331,6 +332,13 @@ h1, h2, h3 { text-wrap: balance; }
   .hero { padding-top: 104px; padding-bottom: 50px; }
   .hero__photo { width: min(250px, 62vw); }
   .chat { --overlap: 34%; }
+}
+/* Narrow phones: the bubbles reach further in (they're clear of the face) so they stay on screen */
+@media (max-width: 380px) {
+  .chat { --overlap: 40%; }
+  .chat__bubble { padding: 6px 10px; font-size: 11px; }
+  .chat__body > span { gap: 6px; }
+  .chat__body .ico { width: 13px; height: 13px; }
 }
 
 /* ---------- Marquee ---------- */

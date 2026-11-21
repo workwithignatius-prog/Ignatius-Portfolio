@@ -208,12 +208,17 @@
       .map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)} <span aria-hidden="true">↗</span></a></li>`)
       .join("");
     // Passions as chat messages, alternating either side of the portrait from top to bottom.
+    // On screens where the bubbles reach into the photo (up to 1200px wide), they keep clear of the
+    // face, which fills 14% to 63% of the photo's height: the first two sit above the head and the
+    // rest beside the shoulders (`--top-clear`).
     const passions = data.passions || [];
+    const n = passions.length;
     $("#chat").innerHTML = passions
       .map((p, i) => {
-        const top = passions.length > 1 ? 4 + (i * 84) / (passions.length - 1) : 40;
+        const top = n > 1 ? 4 + (i * 84) / (n - 1) : 40;
+        const clear = i < 2 ? [-2, 3][i] : n > 3 ? 67 + ((i - 2) * 24) / (n - 3) : 75;
         return `
-        <li class="chat__msg" style="${tone(i)}; --i: ${i}; --top: ${top.toFixed(1)}%">
+        <li class="chat__msg" style="${tone(i)}; --i: ${i}; --top: ${top.toFixed(1)}%; --top-clear: ${clear.toFixed(1)}%">
           <a class="chat__bubble" href="#b-sides" data-album="${i}" data-cursor="Play">
             <span class="chat__typing" aria-hidden="true"><span><i></i><i></i><i></i></span></span>
             <span class="chat__body"><span>${ICONS[p.art] || ICONS.music}${esc(p.title)}</span></span>
