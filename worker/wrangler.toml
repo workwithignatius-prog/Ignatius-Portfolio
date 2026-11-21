@@ -1,0 +1,19 @@
+# The contact form's mail route: itsigni.com/api/contact (see src/index.js).
+# GitHub deploys it with .github/workflows/deploy-worker.yml; the README's "Contact form" section explains it.
+name = "itsigni-contact"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = false
+routes = [
+  { pattern = "itsigni.com/api/contact", zone_name = "itsigni.com" },
+]
+
+[vars]
+FROM = "itsigni <no-reply@itsigni.com>"   # who both emails come from
+TO = "hello@itsigni.com"                  # where messages go; also the Reply-To of the thank-you
+ORIGINS = "https://itsigni.com https://www.itsigni.com"   # pages allowed to send the form
+
+# Logs in the Cloudflare dashboard (Workers & Pages -> itsigni-contact -> Logs).
+# They show when Resend refused an email and why; message text is never logged.
+[observability]
+enabled = true

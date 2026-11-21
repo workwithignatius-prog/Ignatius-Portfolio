@@ -4,3 +4,5 @@ node_modules/
 .DS_Store
 # Smaller photo copies made by build/images.py during the deploy
 site/assets/**/*-*w.webp
+# Wrangler's local cache for the contact form's Worker
+worker/.wrangler/
