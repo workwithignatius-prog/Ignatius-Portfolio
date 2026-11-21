@@ -119,7 +119,8 @@ function renderPost(rel, layout, post, newer, older) {
 }
 
 function baseVars(rel, root) {
-  const clean = rel.replace(/(^|\/)index\.html$/, "$1");
+  // Pages are addressed without ".html" (/about), which GitHub Pages serves from about.html.
+  const clean = rel.replace(/(^|\/)index\.html$/, "$1").replace(/\.html$/, "");
   const url = `${SITE_URL}/${clean}`;
   const photoSrcset = srcsetFor(data.photo, root);
   return {
@@ -149,8 +150,8 @@ function baseVars(rel, root) {
       "A beat, a film, a design, a collab or just a hello: I'd love to hear about it. I usually reply within two working days.",
     // Without a Calendly link there's no call to book, so the copy doesn't offer one.
     reachHtml: data.calendlyUrl
-      ? `Book a call, <a href="${root}contact.html">send me a message</a>`
-      : `<a href="${root}contact.html">Send me a message</a>`,
+      ? `Book a call, <a href="${root}contact">send me a message</a>`
+      : `<a href="${root}contact">Send me a message</a>`,
     contactWays: data.calendlyUrl
       ? "You can book a call, email me directly, or use the form below."
       : "You can email me directly or use the form below.",
@@ -418,7 +419,7 @@ function tagFilterHtml(posts) {
 function renderSitemap(pages, posts) {
   const urls = pages
     .filter((p) => p !== "404.html")
-    .map((p) => `${SITE_URL}/${p.replace(/(^|\/)index\.html$/, "$1")}`)
+    .map((p) => `${SITE_URL}/${p.replace(/(^|\/)index\.html$/, "$1").replace(/\.html$/, "")}`)
     .concat(posts.map((p) => `${SITE_URL}/blog/${p.slug}/`));
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
