@@ -48,11 +48,10 @@ window.PORTFOLIO = {
   // "Let's talk" buttons open this link. Until it's set they open the contact page.
   calendlyUrl: "", // e.g. "https://calendly.com/itsigni/30min"
 
-  // Contact form: every message is emailed to you through Web3Forms (free, 250 a month).
-  // Get a key at https://web3forms.com by entering the inbox that should receive the
-  // messages, then paste it here. The key is safe to publish: it never reveals your address.
-  // Until it's set, the form opens the visitor's email app with the message filled in.
-  formAccessKey: "",
+  // Contact form: every message is emailed to hello@itsigni.com through Web3Forms (free, 250 a month).
+  // The key comes from the form in the Web3Forms dashboard (app.web3forms.com). It's safe to
+  // publish: it never reveals your address. Without a key, the form opens the visitor's email app instead.
+  formAccessKey: "48b8621b-8989-4f9c-906d-b9bd8609593b",
   contactTopics: ["Just saying hi", "A collaboration", "Music", "An ad film or video", "Design", "Content", "Something else"],
 
   // "The B-sides": everything beyond the day job. Each one gets a generated album cover,

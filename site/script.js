@@ -7,6 +7,15 @@
   const page = document.body.dataset.page || "";
   const root = document.body.dataset.root || "";
 
+  // Pages live at short addresses (/about, /contact). Old links ending in .html still work;
+  // this shows the short address in the address bar too, without reloading.
+  if (page && page !== "notfound" && /\.html$/.test(location.pathname)) {
+    try {
+      const clean = location.pathname.replace(/(^|\/)index\.html$/, "$1").replace(/\.html$/, "");
+      history.replaceState(history.state, "", clean + location.search + location.hash);
+    } catch { /* leave the address as it is */ }
+  }
+
   const esc = (s = "") =>
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const pad = (n) => String(n).padStart(2, "0");

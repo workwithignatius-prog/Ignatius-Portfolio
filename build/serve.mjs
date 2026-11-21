@@ -18,6 +18,8 @@ http
     let file = path.join(dir, decodeURIComponent(new URL(req.url, "http://x").pathname));
     if (!file.startsWith(dir)) return res.writeHead(403).end();
     if (fs.existsSync(file) && fs.statSync(file).isDirectory()) file = path.join(file, "index.html");
+    // Pages are linked without ".html" (/about), as GitHub Pages serves them.
+    if (!fs.existsSync(file) && fs.existsSync(`${file}.html`)) file = `${file}.html`;
     if (!fs.existsSync(file)) {
       res.writeHead(404, { "Content-Type": types[".html"] });
       return fs.createReadStream(path.join(dir, "404.html")).on("error", () => res.end("Not found")).pipe(res);
