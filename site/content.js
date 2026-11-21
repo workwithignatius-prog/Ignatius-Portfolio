@@ -48,9 +48,11 @@ window.PORTFOLIO = {
   // "Let's talk" buttons open this link. Until it's set they open the contact page.
   calendlyUrl: "", // e.g. "https://calendly.com/itsigni/30min"
 
-  // Contact form: every message is emailed to hello@itsigni.com through Web3Forms (free, 250 a month).
-  // The key comes from the form in the Web3Forms dashboard (app.web3forms.com). It's safe to
-  // publish: it never reveals your address. Without a key, the form opens the visitor's email app instead.
+  // Contact form. Messages go to formEndpoint, the site's own mail route (worker/ in this repo): it
+  // emails each one to hello@itsigni.com from no-reply@itsigni.com and sends the visitor a thank-you.
+  // If that route is down, they go through Web3Forms instead (formAccessKey, free, 250 a month; the
+  // key is in app.web3forms.com and is safe to publish). With neither, the form opens the visitor's email app.
+  formEndpoint: "/api/contact",
   formAccessKey: "48b8621b-8989-4f9c-906d-b9bd8609593b",
   contactTopics: ["Just saying hi", "A collaboration", "Music", "An ad film or video", "Design", "Content", "Something else"],
 
