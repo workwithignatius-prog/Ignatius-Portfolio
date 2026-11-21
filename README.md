@@ -17,8 +17,8 @@ Portfolio and blog for Ignatius Nirmal G.
 
 The site lives at **itsigni.com**; www.itsigni.com and the old github.io address forward there.
 
-- **Cloudflare** (DNS for itsigni.com): `itsigni.com` and `www` are CNAME records pointing to `workwithignatius-prog.github.io`, with the proxy off (**DNS only**). The MX and TXT records are for email; leave them alone.
-- **GitHub** (this repository's **Settings → Pages**): **Source** is **GitHub Actions**, **Custom domain** is `itsigni.com`, and **Enforce HTTPS** is ticked. Don't switch the source to "Deploy from a branch": that publishes the raw repository instead of the built site.
+- **Cloudflare** (DNS for itsigni.com): `itsigni.com` and `www` are CNAME records pointing to `workwithignatius-prog.github.io`, with the proxy **on** (orange cloud). Keep it on: the contact form's mail route only works through the proxy. Cloudflare also provides HTTPS; keep **SSL/TLS → Edge Certificates → Always Use HTTPS** on. The MX and TXT records are for email (Zoho, and Resend for no-reply@itsigni.com); leave them alone.
+- **GitHub** (this repository's **Settings → Pages**): **Source** is **GitHub Actions** and **Custom domain** is `itsigni.com`. Don't switch the source to "Deploy from a branch": that publishes the raw repository instead of the built site.
 
 ## Where things live
 
@@ -35,8 +35,33 @@ The site lives at **itsigni.com**; www.itsigni.com and the old github.io address
 Settings at the top of `site/content.js`:
 
 - `calendlyUrl` — where every "Let's talk" button goes. Until it's set, they open the contact page.
-- `formAccessKey` — the [Web3Forms](https://web3forms.com) access key (free, 250 messages a month). Every contact-form message is emailed to hello@itsigni.com, the inbox the Web3Forms account uses; replying answers the sender. The key is in the Web3Forms dashboard (app.web3forms.com → Forms). Without a key, the form opens the visitor's email app instead.
+- `formEndpoint` — where the contact form sends messages: `/api/contact`, the site's own mail route (see **Contact form** below).
+- `formAccessKey` — the [Web3Forms](https://web3forms.com) access key (free, 250 messages a month), the backup when the mail route is down. Web3Forms emails the message to hello@itsigni.com, without the visitor's thank-you. The key is in the Web3Forms dashboard (app.web3forms.com → Forms). With neither setting, the form opens the visitor's email app instead.
 - `siteUrl` — the site's address, `https://itsigni.com`. It's used for link previews and the sitemap, and must match the custom domain in GitHub (see **Domain** above).
+
+## Contact form
+
+The contact page's form sends each message to the site's own mail route, **itsigni.com/api/contact**, a small Cloudflare Worker in `worker/`. For every message:
+
+1. You get an email at hello@itsigni.com from **itsigni <no-reply@itsigni.com>**, styled like the site. Replying answers the visitor.
+2. The visitor gets a thank-you from the same address, also styled like the site. Replying to it reaches hello@itsigni.com. It never repeats what was typed into the form, so the form can't be used to pass a message on to someone else.
+
+[Resend](https://resend.com) sends both emails (free: 3,000 a month, up to 100 a day). If the mail route ever fails, the form sends the message through Web3Forms instead, and as a last resort opens the visitor's email app.
+
+| What | Where |
+|------|-------|
+| Both email designs and their wording | `worker/src/email.js` |
+| Checks, spam protection and sending | `worker/src/index.js` |
+| Sender, recipient and the pages allowed to send | `[vars]` in `worker/wrangler.toml` |
+| Tests | `worker/test/worker.test.mjs` |
+
+- **Deploying:** a release to `Prod` that changes `worker/` deploys it through the **Deploy contact form** workflow. You can also run that workflow by hand from the **Actions** tab. It needs three repository secrets (**Settings → Secrets and variables → Actions**):
+  - `CLOUDFLARE_API_TOKEN`: a Cloudflare API token made from the **Edit Cloudflare Workers** template.
+  - `CLOUDFLARE_ACCOUNT_ID`: shown on the itsigni.com overview page in Cloudflare.
+  - `RESEND_API_KEY`: a Resend API key with sending access.
+- **Topics:** the form's topics (`contactTopics` in `site/content.js`) also appear in `TOPICS` in `worker/src/email.js`, which gives each one its colour. Change both together; the dev checks fail if they differ.
+- **Spam:** a hidden field catches simple bots, only pages on itsigni.com can send, and each visitor can send 3 messages every 10 minutes.
+- **When something goes wrong:** Cloudflare's **Workers & Pages → itsigni-contact → Logs** shows each time Resend turned an email down, and why. Resend's **Emails** page lists everything sent.
 
 ## Write a blog post
 

@@ -429,17 +429,64 @@
   }
 
   /* ---------- Contact form ---------- */
+  // Sends JSON and reads the JSON reply, giving up after 15 seconds.
+  async function postJson(url, body) {
+    const stop = new AbortController();
+    const timer = setTimeout(() => stop.abort(), 15000);
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { Accept: "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: stop.signal,
+      });
+      return { status: res.status, reply: await res.json().catch(() => ({})) };
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // Sends a message through the site's own mail route, which also emails the visitor a thank-you.
+  // If that route is down, Web3Forms emails it instead. Resolves to { confirmation } once sent, or to
+  // { problem, field } when the visitor needs to change something; throws when nothing worked.
+  async function sendMessage(m) {
+    if (data.formEndpoint) {
+      try {
+        const { status, reply } = await postJson(data.formEndpoint, m);
+        if (reply.success) return { confirmation: Boolean(reply.confirmation) };
+        if ((status === 400 || status === 429) && reply.message) return { problem: reply.message, field: reply.field };
+      } catch {
+        /* the route is down: use the backup */
+      }
+    }
+    if (!data.formAccessKey) throw new Error("not sent");
+    const mail = {
+      access_key: data.formAccessKey,
+      subject: `New message from ${m.name}: ${m.topic}`,
+      from_name: `${data.handle} website`,
+      name: m.name,
+      email: m.email,
+    };
+    if (m.link) mail["Website or social"] = m.link;
+    mail["Reaching out about"] = m.topic;
+    mail.message = m.message;
+    const { reply } = await postJson("https://api.web3forms.com/submit", mail);
+    if (!reply.success) throw new Error(reply.message || "not sent");
+    return { confirmation: false };
+  }
+
   function initForm() {
     const form = $("#contactForm");
     if (!form) return;
     const status = $("#formStatus");
     const submit = $("#formSubmit");
+    const fields = { name: $("#fName"), email: $("#fEmail"), link: $("#fLink"), message: $("#fMessage") };
     const say = (msg, kind = "") => { status.textContent = msg; status.className = `form__status ${kind && `is-${kind}`}`; };
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       let firstBad = null;
-      [$("#fName"), $("#fEmail"), $("#fMessage")].forEach((f) => {
+      [fields.name, fields.email, fields.message].forEach((f) => {
         const bad = !f.value.trim() || (f.type === "email" && !/^\S+@\S+\.\S+$/.test(f.value.trim()));
         f.closest(".field").classList.toggle("is-invalid", bad);
         if (bad && !firstBad) firstBad = f;
@@ -452,47 +499,37 @@
       if (form._gotcha.value) return; // spam bot
 
       const entry = Object.fromEntries(new FormData(form));
-      delete entry._gotcha;
+      const m = { name: entry.name.trim(), email: entry.email.trim(), link: entry.link.trim(), topic: entry.topic, message: entry.message.trim() };
+      const first = m.name.split(/\s+/)[0];
 
-      if (!data.formAccessKey) {
-        const body = `Name: ${entry.name}\nEmail: ${entry.email}\nLink: ${entry.link || "-"}\nAbout: ${entry.topic}\n\n${entry.message}`;
-        location.href = `mailto:${data.email}?subject=${encodeURIComponent(`${entry.topic} — ${entry.name}`)}&body=${encodeURIComponent(body)}`;
+      if (!data.formEndpoint && !data.formAccessKey) {
+        const body = `Name: ${m.name}\nEmail: ${m.email}\nLink: ${m.link || "-"}\nAbout: ${m.topic}\n\n${m.message}`;
+        location.href = `mailto:${data.email}?subject=${encodeURIComponent(`${m.topic} — ${m.name}`)}&body=${encodeURIComponent(body)}`;
         say(`Your email app should open with the message ready to send. If it doesn't, write to ${data.email}.`);
         return;
       }
 
-      // Web3Forms emails the message to the inbox the access key was created with.
-      const mail = {
-        access_key: data.formAccessKey,
-        subject: `New message from ${entry.name.trim()}: ${entry.topic}`,
-        from_name: `${data.handle} website`,
-        name: entry.name.trim(),
-        email: entry.email.trim(),
-      };
-      if (entry.link.trim()) mail["Website or social"] = entry.link.trim();
-      mail["Reaching out about"] = entry.topic;
-      mail.message = entry.message.trim();
-
       submit.disabled = true;
       say("Sending…");
-      const stop = new AbortController();
-      const timer = setTimeout(() => stop.abort(), 15000);
       try {
-        const res = await fetch("https://api.web3forms.com/submit", {
-          method: "POST",
-          headers: { Accept: "application/json", "Content-Type": "application/json" },
-          body: JSON.stringify(mail),
-          signal: stop.signal,
-        });
-        const reply = await res.json().catch(() => ({}));
-        if (!res.ok || !reply.success) throw new Error(reply.message || `HTTP ${res.status}`);
+        const result = await sendMessage(m);
+        if (result.problem) {
+          const field = fields[result.field];
+          if (field) {
+            field.closest(".field").classList.add("is-invalid");
+            field.focus();
+          }
+          say(result.problem, "error");
+          return;
+        }
         form.reset();
-        say(`Sent! Thanks, ${mail.name.split(/\s+/)[0]}. I'll reply to ${mail.email} soon.`, "ok");
+        say(result.confirmation
+          ? `Sent! Thanks, ${first}. A confirmation is on its way to ${m.email}.`
+          : `Sent! Thanks, ${first}. I'll reply to ${m.email} soon.`, "ok");
         toast("✓ Message sent");
       } catch {
         say(`Your message couldn't be sent. Please try again, or email ${data.email}.`, "error");
       } finally {
-        clearTimeout(timer);
         submit.disabled = false;
       }
     });

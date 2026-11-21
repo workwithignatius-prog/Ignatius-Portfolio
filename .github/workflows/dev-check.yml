@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Test the contact form's mail route
+        run: node --test worker/test/worker.test.mjs
       - name: Build the site, including drafts
         run: node build/build.mjs --out _site --drafts
       - name: Check the main pages were built
