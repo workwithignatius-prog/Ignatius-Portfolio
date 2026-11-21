@@ -9,6 +9,7 @@
 // Usage: node build/build.mjs [--out dist] [--drafts] [--dev]
 //   --drafts  include posts marked `draft: true`
 //   --dev     dev preview: drafts on, search engines off, site URL + "/dev"
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
@@ -27,6 +28,12 @@ const SITE_URL = `${(data.siteUrl || "").replace(/\/$/, "")}${DEV ? "/dev" : ""}
 const SITE_PATH = SITE_URL ? new URL(SITE_URL).pathname.replace(/\/?$/, "/") : "/";
 const partials = new Map();
 const folderFiles = new Map(); // folder → its file names, for finding the smaller photo copies
+// A short code made from the stylesheet and scripts. Pages ask for styles.css?v=<code>, so each update
+// reaches visitors at once, even where a cache (Cloudflare tells browsers 4 hours) would keep the old files.
+const ASSET_VERSION = createHash("sha1")
+  .update(["styles.css", "script.js", "content.js"].map((f) => read(path.join(SRC, f))).join("\n"))
+  .digest("hex")
+  .slice(0, 10);
 // Accent colours a post can ask for in its front matter; they map to the site's --c0…--c5 tones.
 const ACCENTS = ["red", "blue", "yellow", "green", "orange", "teal"];
 
@@ -136,6 +143,7 @@ function baseVars(rel, root) {
     ogImage: `${SITE_URL}/assets/me.jpg`,
     robots: DEV ? "noindex, nofollow" : "index, follow",
     year: String(new Date().getFullYear()),
+    v: ASSET_VERSION,
     photoSrc: assetUrl(data.photo || "assets/me.jpg", root),
     photoSrcset,
     photoSet: photoSrcset ? ` srcset="${esc(photoSrcset)}"` : "",
