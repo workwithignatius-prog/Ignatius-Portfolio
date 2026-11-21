@@ -23,7 +23,7 @@ window.PORTFOLIO = {
   availability: "Taking requests: collabs, gigs & new roles",
   email: "hello@itsigni.com",
 
-  // The live address of the site, used in share links, the RSS feed and the sitemap.
+  // The live address of the site, used in share links and the sitemap.
   // It must match the custom domain in GitHub (Settings -> Pages); change both together.
   siteUrl: "https://itsigni.com",
 
@@ -130,8 +130,6 @@ window.PORTFOLIO = {
     { label: "LinkedIn", url: "https://www.linkedin.com/in/itsigni/" },
     { label: "GitHub", url: "https://github.com/workwithignatius-prog" },
   ],
-
-  blogDescription: "Notes on music, films, design, training and whatever else I'm into.",
 
   // Greetings cycled on the home page's loading screen.
   greetings: ["Hello", "வணக்கம்", "नमस्ते", "Hola", "Bonjour", "Ciao", "こんにちは"],

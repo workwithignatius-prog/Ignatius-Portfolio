@@ -2,3 +2,5 @@ dist/
 _site/
 node_modules/
 .DS_Store
+# Smaller photo copies made by build/images.py during the deploy
+site/assets/**/*-*w.webp

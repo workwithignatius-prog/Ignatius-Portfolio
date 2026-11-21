@@ -22,6 +22,6 @@ jobs:
         run: node build/build.mjs --out _site --drafts
       - name: Check the main pages were built
         run: |
-          for f in index.html about.html contact.html blog/index.html 404.html feed.xml sitemap.xml; do
+          for f in index.html about.html contact.html blog/index.html 404.html sitemap.xml; do
             test -f "_site/$f" || { echo "Missing _site/$f"; exit 1; }
           done

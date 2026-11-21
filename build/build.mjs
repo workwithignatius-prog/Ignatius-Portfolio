@@ -4,7 +4,7 @@
 //   - fills <!-- include:name --> markers with site/_partials/name.html
 //   - replaces {{variables}} (HTML-escaped) and {{{variables}}} (raw)
 //   - turns site/blog/posts/*.md into blog/<slug>/index.html pages
-//   - writes the blog listing, the home page's latest posts, feed.xml and sitemap.xml
+//   - writes the blog listing, the home page's latest posts and sitemap.xml
 //
 // Usage: node build/build.mjs [--out dist] [--drafts] [--dev]
 //   --drafts  include posts marked `draft: true`
@@ -26,6 +26,7 @@ const data = loadContent();
 const SITE_URL = `${(data.siteUrl || "").replace(/\/$/, "")}${DEV ? "/dev" : ""}`;
 const SITE_PATH = SITE_URL ? new URL(SITE_URL).pathname.replace(/\/?$/, "/") : "/";
 const partials = new Map();
+const folderFiles = new Map(); // folder → its file names, for finding the smaller photo copies
 // Accent colours a post can ask for in its front matter; they map to the site's --c0…--c5 tones.
 const ACCENTS = ["red", "blue", "yellow", "green", "orange", "teal"];
 
@@ -59,7 +60,6 @@ function main() {
     write(rel, renderPost(rel, layout, post, posts[i - 1], posts[i + 1]));
   });
 
-  write("feed.xml", renderFeed(posts));
   write("sitemap.xml", renderSitemap(pages, posts));
   if (!DEV) write("robots.txt", `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 
@@ -103,7 +103,9 @@ function renderPost(rel, layout, post, newer, older) {
     heroClass: !post.cover ? "" : post.coverSize && post.coverSize.h > post.coverSize.w ? "post-hero--split" : "post-hero--wide",
     toneStyle: tone(post, 0),
     coverHtml: post.cover
-      ? `<figure class="post-cover"><img src="${esc(assetUrl(post.cover, root))}" alt="${esc(post.coverAlt || "")}"${
+      ? `<figure class="post-cover"><img src="${esc(assetUrl(post.cover, root))}"${srcsetAttr(post.cover, root,
+          post.coverSize && post.coverSize.h > post.coverSize.w ? "(max-width: 506px) calc(100vw - 46px), 470px" : "(max-width: 1132px) calc(100vw - 32px), 1100px"
+        )} alt="${esc(post.coverAlt || "")}"${
           post.coverSize ? ` width="${post.coverSize.w}" height="${post.coverSize.h}"` : ""
         }${post.coverPosition ? ` style="object-position: ${esc(post.coverPosition)}"` : ""} fetchpriority="high"></figure>`
       : "",
@@ -119,6 +121,7 @@ function renderPost(rel, layout, post, newer, older) {
 function baseVars(rel, root) {
   const clean = rel.replace(/(^|\/)index\.html$/, "$1");
   const url = `${SITE_URL}/${clean}`;
+  const photoSrcset = srcsetFor(data.photo, root);
   return {
     root,
     home: root || "./",
@@ -132,6 +135,9 @@ function baseVars(rel, root) {
     ogImage: `${SITE_URL}/assets/me.jpg`,
     robots: DEV ? "noindex, nofollow" : "index, follow",
     year: String(new Date().getFullYear()),
+    photoSrc: assetUrl(data.photo || "assets/me.jpg", root),
+    photoSrcset,
+    photoSet: photoSrcset ? ` srcset="${esc(photoSrcset)}"` : "",
     fullName: data.fullName,
     name: data.name,
     role: data.role,
@@ -141,6 +147,13 @@ function baseVars(rel, root) {
     contactTitle: "Let's make something",
     contactLead:
       "A beat, a film, a design, a collab or just a hello: I'd love to hear about it. I usually reply within two working days.",
+    // Without a Calendly link there's no call to book, so the copy doesn't offer one.
+    reachHtml: data.calendlyUrl
+      ? `Book a call, <a href="${root}contact.html">send me a message</a>`
+      : `<a href="${root}contact.html">Send me a message</a>`,
+    contactWays: data.calendlyUrl
+      ? "You can book a call, email me directly, or use the form below."
+      : "You can email me directly or use the form below.",
     devBadge: DEV ? `<p class="dev-badge mono">Dev preview · drafts visible · not live</p>` : "",
   };
 }
@@ -306,20 +319,27 @@ function firstParagraph(body) {
 // A paragraph of images becomes photos with captions (an image's title is its caption):
 // one landscape photo runs wide, two or more sit side by side.
 function postHtml(html, root) {
-  return photoBlocks(html)
+  return photoBlocks(html, root)
+    .replace(/<aside class="noticed">([\s\S]*?)<\/aside>/g, '<div class="noticed">$1</div>')
     .replace(/(src|href)="\/(?!\/)/g, `$1="${root}`)
     .replace(/<img /g, '<img loading="lazy" decoding="async" ')
     .replace(/<table>/g, '<div class="table-wrap"><table>')
     .replace(/<\/table>/g, "</table></div>");
 }
 
-function photoBlocks(html) {
+function photoBlocks(html, root) {
   return html.replace(/<p>((?:\s*<img\b[^>]*>\s*)+)<\/p>/g, (_, imgs) => {
-    const figures = imgs.match(/<img\b[^>]*>/g).map((tag) => {
+    const tags = imgs.match(/<img\b[^>]*>/g);
+    const figures = tags.map((tag) => {
       const attr = (name) => (new RegExp(`\\s${name}="([^"]*)"`).exec(tag) || [])[1] || "";
       const src = attr("src");
       const size = /^\//.test(src) ? imageSize(src) : null;
-      const img = `<img src="${src}" alt="${attr("alt")}"${size ? ` width="${size.w}" height="${size.h}"` : ""}>`;
+      // How wide it shows: side-by-side photos share the text column, a landscape one runs wider, a portrait one is up to 480px.
+      const sizes = tags.length > 1
+        ? `(max-width: 560px) calc(100vw - 32px), ${Math.round((720 - 18 * (tags.length - 1)) / tags.length)}px`
+        : size && size.w > size.h ? "(max-width: 1072px) calc(100vw - 32px), 1040px" : "(max-width: 512px) calc(100vw - 32px), 480px";
+      const set = /^\//.test(src) ? srcsetAttr(src, root, sizes) : "";
+      const img = `<img src="${src}"${set} alt="${attr("alt")}"${size ? ` width="${size.w}" height="${size.h}"` : ""}>`;
       const caption = attr("title");
       return { html: `<figure>${img}${caption ? `<figcaption>${caption}</figcaption>` : ""}</figure>`, wide: size && size.w > size.h };
     });
@@ -328,10 +348,14 @@ function photoBlocks(html) {
   });
 }
 
-function postCard(post, root, i, featured = false) {
+function postCard(post, root, i, featured = false, level = 3) {
   const pos = post.coverPosition ? ` style="object-position: ${esc(post.coverPosition)}"` : "";
+  const sizes = featured
+    ? "(max-width: 640px) calc(100vw - 32px), 560px"
+    : "(max-width: 640px) calc(100vw - 32px), (max-width: 1000px) calc(50vw - 40px), 400px";
+  const dims = post.coverSize ? ` width="${post.coverSize.w}" height="${post.coverSize.h}"` : "";
   const media = post.cover
-    ? `<img src="${esc(assetUrl(post.cover, root))}" alt="" loading="lazy"${pos}>`
+    ? `<img src="${esc(assetUrl(post.cover, root))}"${srcsetAttr(post.cover, root, sizes)}${dims} alt="" loading="lazy" decoding="async"${pos}>`
     : `<span class="post-card__mark" aria-hidden="true">${esc(post.title.trim().charAt(0).toUpperCase())}</span>`;
   return `
         <article class="post-card glow${featured ? " post-card--featured" : ""}" data-tags="${esc(post.tags.map((t) => t.toLowerCase()).join("|"))}" style="${tone(post, i)}">
@@ -340,7 +364,7 @@ function postCard(post, root, i, featured = false) {
             <div class="post-card__body">
               ${post.draft ? '<span class="post-card__draft mono">Draft</span>' : ""}
               <ul class="post-card__tags">${post.tags.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>
-              <h3 class="post-card__title">${esc(post.title)}</h3>
+              <h${level} class="post-card__title">${esc(post.title)}</h${level}>
               <p class="post-card__excerpt">${esc(post.excerpt)}</p>
               <p class="post-card__meta mono"><time datetime="${post.date.toISOString().slice(0, 10)}">${formatDate(post.date)}</time> · ${post.readingTime} min read</p>
             </div>
@@ -371,15 +395,12 @@ function postListHtml(posts, root) {
       <div class="empty glow">
         <span class="empty__mark" aria-hidden="true">✍</span>
         <h2>The first post is on its way</h2>
-        <p>I'm writing about presales, solution engineering, SaaS and AI. ${linkedin ? "Follow me on LinkedIn or subscribe" : "Subscribe"} to the RSS feed to read it first.</p>
-        <div class="empty__cta">
-          ${linkedin ? `<a class="btn btn--primary" href="${esc(linkedin.url)}" target="_blank" rel="noopener">Follow on LinkedIn</a>` : ""}
-          <a class="btn btn--ghost" href="${root}feed.xml">RSS feed</a>
-        </div>
+        <p>Small stories about the things I notice are coming soon.${linkedin ? " Follow me on LinkedIn to catch the first one." : ""}</p>
+        ${linkedin ? `<div class="empty__cta"><a class="btn btn--primary" href="${esc(linkedin.url)}" target="_blank" rel="noopener">Follow on LinkedIn</a></div>` : ""}
       </div>`;
   }
   return `
-      <div class="post-grid post-grid--list" id="postGrid">${posts.map((p, i) => postCard(p, root, i, i === 0)).join("")}
+      <div class="post-grid post-grid--list" id="postGrid">${posts.map((p, i) => postCard(p, root, i, i === 0, 2)).join("")}
       </div>
       <p class="post-grid__none" id="postNone" hidden>No posts with that tag yet.</p>`;
 }
@@ -392,32 +413,7 @@ function tagFilterHtml(posts) {
     .join("");
 }
 
-/* ---------- Feed and sitemap ---------- */
-
-function renderFeed(posts) {
-  const items = posts
-    .map(
-      (p) => `
-    <item>
-      <title>${esc(p.title)}</title>
-      <link>${SITE_URL}/blog/${p.slug}/</link>
-      <guid>${SITE_URL}/blog/${p.slug}/</guid>
-      <pubDate>${p.date.toUTCString()}</pubDate>
-      <description>${esc(p.excerpt)}</description>
-    </item>`
-    )
-    .join("");
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
-  <channel>
-    <title>${esc(data.fullName)} — Blog</title>
-    <link>${SITE_URL}/blog/</link>
-    <description>${esc(data.blogDescription || "Notes on music, films, design, training and whatever else I'm into.")}</description>
-    <language>en</language>${items}
-  </channel>
-</rss>
-`;
-}
+/* ---------- Sitemap ---------- */
 
 function renderSitemap(pages, posts) {
   const urls = pages
@@ -456,6 +452,39 @@ function* walk(dir) {
     if (entry.isDirectory()) yield* walk(full);
     else yield full;
   }
+}
+
+/* ---------- Responsive images ---------- */
+
+// The WebP copies of a photo that build/images.py made (photo-480w.webp, photo-800w.webp… and one at
+// full size), as a srcset; the original photo stays the largest choice only if there's no full-size copy.
+// "" when there are no copies or the photo isn't local.
+function srcsetFor(rel, root) {
+  if (!rel || /^(https?:)?\/\//.test(rel)) return "";
+  const clean = rel.replace(/^\//, "");
+  const size = imageSize(clean);
+  if (!size) return "";
+  const dir = path.posix.dirname(clean);
+  const stem = path.posix.basename(clean).replace(/\.[^.]+$/, "");
+  if (!folderFiles.has(dir)) {
+    const abs = path.join(SRC, dir);
+    folderFiles.set(dir, fs.existsSync(abs) ? fs.readdirSync(abs) : []);
+  }
+  const copies = folderFiles.get(dir)
+    .map((f) => /^(.*)-(\d+)w\.webp$/.exec(f))
+    .filter((m) => m && m[1] === stem && Number(m[2]) <= size.w)
+    .map((m) => ({ file: m[0], w: Number(m[2]) }))
+    .sort((a, b) => a.w - b.w);
+  if (!copies.length) return "";
+  const list = copies.map((c) => `${root}${dir}/${c.file} ${c.w}w`);
+  if (copies[copies.length - 1].w < size.w) list.push(`${root}${clean} ${size.w}w`);
+  return list.join(", ");
+}
+
+// srcset and sizes attributes for an <img>, or "" without copies.
+function srcsetAttr(rel, root, sizes) {
+  const set = srcsetFor(rel, root);
+  return set ? ` srcset="${esc(set)}" sizes="${sizes}"` : "";
 }
 
 function assetUrl(p, root) {
