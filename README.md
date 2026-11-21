@@ -35,7 +35,7 @@ The site lives at **itsigni.com**; www.itsigni.com and the old github.io address
 Settings at the top of `site/content.js`:
 
 - `calendlyUrl` — where every "Let's talk" button goes. Until it's set, they open the contact page.
-- `formAccessKey` — a free [Web3Forms](https://web3forms.com) access key. Each contact-form message is then emailed to the inbox you registered the key with. Until it's set, the form opens the visitor's email app.
+- `formAccessKey` — the [Web3Forms](https://web3forms.com) access key (free, 250 messages a month). Every contact-form message is emailed to hello@itsigni.com, the inbox the Web3Forms account uses; replying answers the sender. The key is in the Web3Forms dashboard (app.web3forms.com → Forms). Without a key, the form opens the visitor's email app instead.
 - `siteUrl` — the site's address, `https://itsigni.com`. It's used for link previews and the sitemap, and must match the custom domain in GitHub (see **Domain** above).
 
 ## Write a blog post
