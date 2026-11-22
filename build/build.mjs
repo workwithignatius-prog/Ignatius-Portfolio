@@ -3,7 +3,7 @@
 //   - copies every file (skipping _partials, _layouts, dotfiles and Markdown sources)
 //   - fills <!-- include:name --> markers with site/_partials/name.html
 //   - replaces {{variables}} (HTML-escaped) and {{{variables}}} (raw)
-//   - turns site/blog/posts/*.md into blog/<slug>/index.html pages
+//   - turns site/blog/posts/*.md into blog/<slug>.html pages, addressed as /blog/<slug>
 //   - writes the blog listing, the home page's latest posts and sitemap.xml
 //
 // Usage: node build/build.mjs [--out dist] [--drafts] [--dev]
@@ -63,8 +63,11 @@ function main() {
 
   const layout = read(path.join(SRC, "_layouts/post.html"));
   posts.forEach((post, i) => {
-    const rel = `blog/${post.slug}/index.html`;
+    const rel = `blog/${post.slug}.html`;
     write(rel, renderPost(rel, layout, post, posts[i - 1], posts[i + 1]));
+    // A post with a short slug can still be reached at the address its file name gives
+    // (/blog/the-long-name/), so links shared before the slug was set keep working.
+    if (post.fileSlug !== post.slug) write(`blog/${post.fileSlug}/index.html`, renderRedirect(post));
   });
 
   write("sitemap.xml", renderSitemap(pages, posts));
@@ -91,7 +94,7 @@ function renderPage(rel, posts) {
 }
 
 function renderPost(rel, layout, post, newer, older) {
-  const root = "../../";
+  const root = "../";
   const vars = {
     ...baseVars(rel, root),
     page: "post",
@@ -118,11 +121,33 @@ function renderPost(rel, layout, post, newer, older) {
       : "",
     content: postHtml(post.html, root),
     postNavHtml: [
-      newer ? `<a class="post-nav__link" href="${root}blog/${newer.slug}/"><span class="mono">Newer</span><b>${esc(newer.title)}</b></a>` : "<span></span>",
-      older ? `<a class="post-nav__link post-nav__link--older" href="${root}blog/${older.slug}/"><span class="mono">Older</span><b>${esc(older.title)}</b></a>` : "<span></span>",
+      newer ? `<a class="post-nav__link" href="${root}blog/${newer.slug}"><span class="mono">Newer</span><b>${esc(newer.title)}</b></a>` : "<span></span>",
+      older ? `<a class="post-nav__link post-nav__link--older" href="${root}blog/${older.slug}"><span class="mono">Older</span><b>${esc(older.title)}</b></a>` : "<span></span>",
     ].join(""),
   };
   return substitute(resolveIncludes(layout, "_layouts/post.html"), vars, rel);
+}
+
+// A tiny page at a post's old address that forwards to its short one. Search engines treat an
+// instant refresh as a permanent move, and the canonical link names the address to keep.
+function renderRedirect(post) {
+  const to = `${SITE_PATH}blog/${post.slug}`;
+  const url = `${SITE_URL}/blog/${post.slug}`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>${esc(post.title)}</title>
+<link rel="canonical" href="${esc(url)}">
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url=${esc(to)}">
+<script>location.replace(${JSON.stringify(to)} + location.search + location.hash);</script>
+</head>
+<body>
+<p>This post has moved to <a href="${esc(to)}">${esc(url.replace(/^https?:\/\//, ""))}</a>.</p>
+</body>
+</html>
+`;
 }
 
 function baseVars(rel, root) {
@@ -218,10 +243,14 @@ function loadPosts() {
     .map((f) => parsePost(f, read(path.join(dir, f))))
     .filter((p) => DRAFTS || !p.draft);
 
-  const seen = new Set();
+  // Each post's address, and the old one it forwards from, must be its own.
+  const seen = new Map();
   for (const p of posts) {
-    if (seen.has(p.slug)) throw new Error(`Two posts share the address "blog/${p.slug}/" — give one a different file name or slug`);
-    seen.add(p.slug);
+    for (const slug of new Set([p.slug, p.fileSlug])) {
+      if (slug === "index") throw new Error(`site/blog/posts/${p.file}: "index" is the blog page's own address, so choose another slug`);
+      if (seen.has(slug)) throw new Error(`Two posts would use the address "blog/${slug}" (${seen.get(slug)} and ${p.file}): give one a different slug`);
+      seen.set(slug, p.file);
+    }
   }
   return posts.sort((a, b) => b.date - a.date || a.order - b.order || a.title.localeCompare(b.title));
 }
@@ -236,7 +265,9 @@ function parsePost(file, src) {
     throw new Error(`${where}: add a date like "date: 2026-10-28", or start the file name with it`);
   }
   if (!meta.title) throw new Error(`${where}: add a title, e.g. "title: My first post"`);
-  const slug = slugify(String(meta.slug || (fromName ? fromName[2] : file.replace(/\.md$/, ""))));
+  // The address: the slug line if there is one, otherwise the file name after the date.
+  const fileSlug = slugify(fromName ? fromName[2] : file.replace(/\.md$/, ""));
+  const slug = meta.slug ? slugify(String(meta.slug)) : fileSlug;
   const tags = (Array.isArray(meta.tags) ? meta.tags : String(meta.tags || "").split(",")).map((t) => String(t).trim()).filter(Boolean);
   const words = body
     .replace(/```[\s\S]*?```/g, " ")
@@ -252,6 +283,7 @@ function parsePost(file, src) {
   return {
     file,
     slug,
+    fileSlug,
     date,
     title: String(meta.title),
     excerpt: String(meta.excerpt || firstParagraph(body)),
@@ -368,7 +400,7 @@ function postCard(post, root, i, featured = false, level = 3) {
     : `<span class="post-card__mark" aria-hidden="true">${esc(post.title.trim().charAt(0).toUpperCase())}</span>`;
   return `
         <article class="post-card glow${featured ? " post-card--featured" : ""}" data-tags="${esc(post.tags.map((t) => t.toLowerCase()).join("|"))}" style="${tone(post, i)}">
-          <a class="post-card__link" href="${root}blog/${post.slug}/">
+          <a class="post-card__link" href="${root}blog/${post.slug}">
             <div class="post-card__media">${media}</div>
             <div class="post-card__body">
               ${post.draft ? '<span class="post-card__draft mono">Draft</span>' : ""}
@@ -428,7 +460,7 @@ function renderSitemap(pages, posts) {
   const urls = pages
     .filter((p) => p !== "404.html")
     .map((p) => `${SITE_URL}/${p.replace(/(^|\/)index\.html$/, "$1").replace(/\.html$/, "")}`)
-    .concat(posts.map((p) => `${SITE_URL}/blog/${p.slug}/`));
+    .concat(posts.map((p) => `${SITE_URL}/blog/${p.slug}`));
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${esc(u)}</loc></url>`).join("\n")}

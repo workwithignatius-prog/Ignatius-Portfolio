@@ -66,12 +66,13 @@ The contact page's form sends each message to the site's own mail route, **itsig
 ## Write a blog post
 
 1. On GitHub, open `site/blog/posts/` and choose **Add file → Create new file**.
-2. Name it with the date and a short title: `2026-11-02-behind-my-latest-beat.md`. The part after the date becomes the address: `/blog/behind-my-latest-beat/`.
+2. Name it with the date and a short title: `2026-11-02-latest-beat.md`. The part after the date becomes the address, `itsigni.com/blog/latest-beat`, unless you give the post a `slug` (below).
 3. Start the file with this header, then write the post in Markdown below it:
 
    ```
    ---
    title: Behind my latest beat
+   slug: latest-beat
    date: 2026-11-02
    excerpt: One or two sentences shown on the blog cards.
    tags: [Music, Process]
@@ -81,6 +82,7 @@ The contact page's form sends each message to the site's own mail route, **itsig
    ```
 
    `title` and `date` are required. Everything else is optional:
+   - `slug`: the post's short address. `slug: latest-beat` makes it `itsigni.com/blog/latest-beat`. One or two words keeps links easy to share. The address from the file name still works and forwards here, but choose the slug before you share the post: if you change it later, links to the old slug stop working.
    - `excerpt`: the line on the blog cards (otherwise the first paragraph).
    - `tags`: group posts on the blog page.
    - `cover`: a portrait photo sits beside the title; a landscape one runs wide below it.

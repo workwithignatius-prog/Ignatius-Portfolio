@@ -15,6 +15,11 @@
       history.replaceState(history.state, "", clean + location.search + location.hash);
     } catch { /* leave the address as it is */ }
   }
+  // Short addresses have no slash on the end. If someone adds one (/about/, /blog/bird/), this
+  // "not found" page tries the address once without it.
+  if (page === "notfound" && /[^/]\/+$/.test(location.pathname)) {
+    location.replace(location.pathname.replace(/\/+$/, "") + location.search + location.hash);
+  }
 
   const esc = (s = "") =>
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

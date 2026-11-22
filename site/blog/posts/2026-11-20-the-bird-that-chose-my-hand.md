@@ -1,5 +1,6 @@
 ---
 title: The Bird That Chose My Hand
+slug: bird
 date: 2026-11-20
 order: 3
 excerpt: A little yellow parrot landed on me, looked around, and decided I was safe. A short note on trust, stillness and being chosen by something small.

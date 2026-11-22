@@ -1,5 +1,6 @@
 ---
 title: My Wall of Stories
+slug: story-wall
 date: 2026-11-20
 order: 4
 excerpt: The walls of my room are covered, floor to ceiling, in posters of stories I love. It's where I make beats, plan shots, train, and remember why I make things at all.
@@ -33,7 +34,7 @@ Looking at the wall every day reminds me that people made all of this. Writers w
 
 ## My swipe file, on a wall
 
-In [What a Small Book Taught Me](/blog/what-a-small-book-taught-me/), I wrote about collecting the things that move you. This wall is the biggest version of that. It's my swipe file, printed and pinned up where I can't ignore it.
+In [What a Small Book Taught Me](/blog/small-book), I wrote about collecting the things that move you. This wall is the biggest version of that. It's my swipe file, printed and pinned up where I can't ignore it.
 
 When I'm planning a shot, I'll look up and borrow a colour from one poster, a mood from another, the way a character stands from a third. None of it gets copied. It gets mixed, the way a song you love quietly shapes the next beat you make. The wall doesn't tell me what to make. It reminds me what I love, and that's usually enough to get started.
 
