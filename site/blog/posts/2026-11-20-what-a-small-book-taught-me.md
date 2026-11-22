@@ -1,5 +1,6 @@
 ---
 title: What a Small Book Taught Me
+slug: small-book
 date: 2026-11-20
 order: 1
 excerpt: A small black book called Steal Like an Artist is the reason I started sharing what I make. This is what it taught me, and what I still carry from it.

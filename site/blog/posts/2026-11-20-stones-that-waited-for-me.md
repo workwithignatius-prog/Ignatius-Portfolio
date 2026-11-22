@@ -1,5 +1,6 @@
 ---
 title: Stones That Waited For Me
+slug: stones
 date: 2026-11-20
 order: 2
 excerpt: A morning at the Shore Temple in Mahabalipuram: sea wind, granite softened by thirteen centuries of salt, and a quiet lesson in patience.

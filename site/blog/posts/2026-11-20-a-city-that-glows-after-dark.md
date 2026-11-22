@@ -1,5 +1,6 @@
 ---
 title: A City That Glows After Dark
+slug: glowing-city
 date: 2026-11-20
 order: 5
 excerpt: A night walk by Marina Bay in Singapore: lights on the water, a city that builds roofs over its footpaths, and strangers taking photos for each other.
