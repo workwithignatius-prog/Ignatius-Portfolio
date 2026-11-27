@@ -57,7 +57,7 @@
   function mountPhoto(frame) {
     if (!frame || !data.photo) return;
     const img = new Image();
-    img.alt = data.fullName;
+    img.alt = data.name;
     img.decoding = "async";
     // Smaller copies of the photo, listed by the build when they exist.
     if (frame.dataset.srcset) {
@@ -509,7 +509,7 @@
 
       if (!data.formEndpoint && !data.formAccessKey) {
         const body = `Name: ${m.name}\nEmail: ${m.email}\nLink: ${m.link || "-"}\nAbout: ${m.topic}\n\n${m.message}`;
-        location.href = `mailto:${data.email}?subject=${encodeURIComponent(`${m.topic} — ${m.name}`)}&body=${encodeURIComponent(body)}`;
+        location.href = `mailto:${data.email}?subject=${encodeURIComponent(`${m.topic}, from ${m.name}`)}&body=${encodeURIComponent(body)}`;
         say(`Your email app should open with the message ready to send. If it doesn't, write to ${data.email}.`);
         return;
       }

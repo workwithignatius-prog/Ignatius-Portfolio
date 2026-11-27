@@ -238,7 +238,7 @@ export function renderOwnerEmail({ name, email, link = "", topic = "Something el
   });
 
   const text = plain([
-    `New message on itsigni.com — ${when}`,
+    `New message on itsigni.com (${when})`,
     "",
     `From: ${name.trim()} <${email}>`,
     link ? `Website or social: ${link}` : "",

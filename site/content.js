@@ -2,7 +2,6 @@
 // Blog posts live in site/blog/posts/ (see README.md for how to write one).
 window.PORTFOLIO = {
   name: "Ignatius",
-  fullName: "Ignatius Nirmal G",
   handle: "itsigni",
   greeting: "Heyyya, I'm",
   heroBadge: "a.k.a. itsigni",
@@ -13,7 +12,7 @@ window.PORTFOLIO = {
   tagline:
     "This is my corner of the internet: the music, films and designs I make, the content I create and the training in between.",
   metaDescription:
-    "Ignatius Nirmal G (itsigni) from Chennai, India: music producer, ad film maker, designer and content creator who trains in calisthenics and the gym.",
+    "Ignatius from Chennai, India: music producer, ad film maker, designer and content creator who trains in calisthenics and the gym.",
   location: "Chennai, India",
   city: "Chennai", // the postage stamp and the "My base" card
   region: "Tamil Nadu, India",
@@ -108,7 +107,7 @@ window.PORTFOLIO = {
 
   about: {
     paragraphs: [
-      "I'm Ignatius Nirmal G, itsigni online, and I'm based in Chennai, India. By day, I'm a presales and solutions engineer.",
+      "I'm Ignatius, itsigni online, and I'm based in Chennai, India. By day, I'm a presales and solutions engineer.",
       "The rest of the time, I make things. I produce music: beats, mixes and sound design. I make ad films, from the first concept to the final cut. I design brands, visuals and layouts, and I create content and share the stories behind it.",
       "And I train: calisthenics for bodyweight strength and skills, and the gym for strength.",
       "This site is where all of it lives, along with a blog where I write about whatever I'm into.",

@@ -6,14 +6,28 @@
 <link rel="canonical" href="{{url}}">
 <meta name="theme-color" content="#f5f0e6">
 <meta property="og:type" content="{{ogType}}">
-<meta property="og:site_name" content="{{fullName}}">
+<meta property="og:site_name" content="{{name}}">
 <meta property="og:title" content="{{pageTitle}}">
 <meta property="og:description" content="{{description}}">
 <meta property="og:url" content="{{url}}">
 <meta property="og:image" content="{{ogImage}}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="{{root}}assets/favicon.svg" type="image/svg+xml" id="favicon">
-<script>/* Saturdays and Sundays (the visitor's own day) get the disco-star favicon. */(function () { var d = new Date().getDay(); if (d === 0 || d === 6) document.getElementById("favicon").href = "{{root}}assets/favicon-weekend.svg"; })();</script>
+<script>/* Saturdays and Sundays, by the visitor's own clock, get the disco-star favicon. An open tab switches at midnight. */
+(function () {
+  var link = document.getElementById("favicon"), dir = "{{root}}assets/";
+  function update() {
+    var day = new Date().getDay(), href = dir + (day === 0 || day === 6 ? "favicon-weekend.svg" : "favicon.svg");
+    if (link.getAttribute("href") !== href) link.setAttribute("href", href);
+  }
+  function atMidnight() {
+    var now = new Date(), next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    setTimeout(function () { update(); atMidnight(); }, next - now + 1000);
+  }
+  update(); atMidnight();
+  document.addEventListener("visibilitychange", update);
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
