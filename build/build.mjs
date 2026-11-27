@@ -85,7 +85,7 @@ function renderPage(rel, posts) {
   const vars = {
     ...baseVars(rel, root),
     ...meta,
-    pageTitle: meta.title || data.fullName,
+    pageTitle: meta.title || data.name,
     postsLatest: latestPostsHtml(posts, root),
     postsList: postListHtml(posts, root),
     postsTags: tagFilterHtml(posts),
@@ -98,7 +98,7 @@ function renderPost(rel, layout, post, newer, older) {
   const vars = {
     ...baseVars(rel, root),
     page: "post",
-    pageTitle: `${post.title} — ${data.fullName}`,
+    pageTitle: `${post.title} · ${data.name}`,
     title: post.title,
     description: post.excerpt,
     ogType: "article",
@@ -108,7 +108,7 @@ function renderPost(rel, layout, post, newer, older) {
     readingTime: String(post.readingTime),
     titleEncoded: encodeURIComponent(post.title),
     tagsHtml: post.tags.map((t) => `<li>${esc(t)}</li>`).join(""),
-    draftHtml: post.draft ? `<p class="post-draft mono">Draft — only visible in the dev preview</p>` : "",
+    draftHtml: post.draft ? `<p class="post-draft mono">Draft: only visible in the dev preview</p>` : "",
     // A portrait cover sits beside the title; a landscape one runs wide below it.
     heroClass: !post.cover ? "" : post.coverSize && post.coverSize.h > post.coverSize.w ? "post-hero--split" : "post-hero--wide",
     toneStyle: tone(post, 0),
@@ -159,7 +159,7 @@ function baseVars(rel, root) {
     root,
     home: root || "./",
     page: "",
-    title: data.fullName,
+    title: data.name,
     description: data.metaDescription || data.tagline || "",
     url,
     urlEncoded: encodeURIComponent(url),
@@ -172,7 +172,6 @@ function baseVars(rel, root) {
     photoSrc: assetUrl(data.photo || "assets/me.jpg", root),
     photoSrcset,
     photoSet: photoSrcset ? ` srcset="${esc(photoSrcset)}"` : "",
-    fullName: data.fullName,
     name: data.name,
     role: data.role,
     location: data.location,

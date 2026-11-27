@@ -1,6 +1,6 @@
 # Ignatius-Portfolio
 
-Portfolio and blog for Ignatius Nirmal G.
+Portfolio and blog for Ignatius.
 
 ## Environments
 
