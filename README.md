@@ -31,6 +31,7 @@ The site lives at **itsigni.com**; www.itsigni.com and the old github.io address
 | Images | `site/assets/` (blog images in `site/assets/blog/`) |
 | Page layouts | `site/*.html`, shared pieces in `site/_partials/`, the post layout in `site/_layouts/post.html` |
 | Styles and scripts | `site/styles.css`, `site/script.js` |
+| Favicon (the icon in browser tabs) | `site/assets/favicon.svg` on weekdays; `site/assets/favicon-weekend.svg`, the disco star, on Saturdays and Sundays. A line in `site/_partials/head.html` switches them by the visitor's own day |
 
 Settings at the top of `site/content.js`:
 
